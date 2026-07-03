@@ -162,6 +162,7 @@ function onNameInput() {
 function selectSuggestion(s) {
   itemName.value = s.text
   itemRarity.value = s.unique ? 'UNIQUE' : null
+  itemBaseType.value = s.unique ? s.detail : null
   showDropdown.value = false
 }
 
@@ -198,13 +199,15 @@ async function handleAddItem() {
   error.value = ''
   adding.value = true
   try {
+    const rarity = resolveRarity()
+    const isUnique = rarity === 'UNIQUE'
     const response = await fetch(`/api/groups/${props.groupCode}/items`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: itemName.value,
-        rarity: resolveRarity(),
-        baseType: itemBaseType.value,
+        name: isUnique ? itemName.value : null,
+        rarity,
+        baseType: isUnique ? itemBaseType.value : itemName.value,
         filterGroups: filterGroups.value.map(g => ({
           type: g.type,
           countMin: g.countMin,

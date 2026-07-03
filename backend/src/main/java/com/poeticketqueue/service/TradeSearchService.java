@@ -99,16 +99,11 @@ public class TradeSearchService {
     private String buildQuery(Item item, String league) {
         PoETradeQuery query = new PoETradeQuery(league)
                 .status(PathOfExileTradeApi.sellerStatusType)
+                .baseType(item.baseType)
+                .name(item.name)
+                .category(item.baseType != null ? CATEGORY_MAP.get(item.baseType) : null)
                 .sortPriceAsc();
 
-        if (StringUtils.isNotBlank(item.name) && "UNIQUE".equalsIgnoreCase(item.rarity)) {
-            query.name(item.name);
-        }
-
-        String category = CATEGORY_MAP.get(item.baseType);
-        if (StringUtils.isNotBlank(category)) {
-            query.category(category);
-        }
 
         if (item.getStatGroups() != null && !item.getStatGroups().isEmpty()) {
             query.filterGroups(item.getStatGroups());
