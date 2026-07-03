@@ -1,0 +1,1 @@
+# Unique items to parse fully (one name per line). All others are queried by name/base only.
