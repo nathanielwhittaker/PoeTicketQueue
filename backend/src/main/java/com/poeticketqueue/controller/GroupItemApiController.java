@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping("/api/groups")
@@ -76,49 +77,46 @@ public class GroupItemApiController {
 
     @DeleteMapping("/{groupCode}/items/{index}")
     public ResponseEntity<Group> removeItem(@PathVariable String groupCode, @PathVariable int index, HttpSession session) {
-        String screenName = (String) session.getAttribute(SessionAttributes.SCREEN_NAME);
-        if (screenName == null) {
-            return ResponseEntity.status(401).build();
-        }
-
-        return groupService.findByCode(groupCode).map(group -> {
-            if (!groupMemberService.canTrade(group, screenName)) {
-                return ResponseEntity.status(403).<Group>build();
-            }
+        return withTradePermission(groupCode, session, group -> {
             groupService.removeItem(groupCode, index);
             return ResponseEntity.ok(group);
-        }).orElse(ResponseEntity.notFound().build());
+        });
     }
 
     @PostMapping("/{groupCode}/items/{index}/buy")
     public ResponseEntity<BuyResponse> buyItem(@PathVariable String groupCode, @PathVariable int index, HttpSession session) {
-        String screenName = (String) session.getAttribute(SessionAttributes.SCREEN_NAME);
-        if (screenName == null) {
-            return ResponseEntity.status(401).build();
-        }
-
-        return groupService.findByCode(groupCode).map(group -> {
-            if (!groupMemberService.canTrade(group, screenName)) {
-                return ResponseEntity.status(403).<BuyResponse>build();
-            }
-
+        return withTradePermission(groupCode, session, group -> {
             List<Item> queue = group.getItemQueue();
             if (index < 0 || index >= queue.size()) {
-                return ResponseEntity.badRequest().<BuyResponse>build();
+                return ResponseEntity.badRequest().build();
             }
 
             String poeSessionId = (String) session.getAttribute(SessionAttributes.POE_SESSION_ID);
             if (StringUtils.isBlank(poeSessionId)) {
-                return ResponseEntity.status(400).<BuyResponse>build();
+                return ResponseEntity.status(400).build();
             }
             try {
                 String tradeUrl = tradeSearchService.search(queue.get(index), group.getPoeVersion(), group.getLeague(), poeSessionId);
                 return ResponseEntity.ok(new BuyResponse(tradeUrl));
             } catch (Exception e) {
                 System.out.println(e.getStackTrace());
-                return ResponseEntity.status(502).<BuyResponse>build();
+                return ResponseEntity.status(502).build();
             }
-        }).orElse(ResponseEntity.notFound().build());
+        });
+    }
+
+    private <T> ResponseEntity<T> withTradePermission(String groupCode, HttpSession session, Function<Group, ResponseEntity<T>> action) {
+        String screenName = (String) session.getAttribute(SessionAttributes.SCREEN_NAME);
+        if (screenName == null) {
+            return ResponseEntity.status(401).<T>build();
+        }
+
+        return groupService.findByCode(groupCode).map(group -> {
+            if (!groupMemberService.canTrade(group, screenName)) {
+                return ResponseEntity.status(403).<T>build();
+            }
+            return action.apply(group);
+        }).orElse(ResponseEntity.notFound().<T>build());
     }
 
     private static int zeroIfNull(Integer val) {

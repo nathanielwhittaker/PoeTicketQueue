@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.function.Supplier;
+
 @RestController
 @RequestMapping("/api/groups")
 public class JoinGroupApiController {
@@ -63,16 +65,11 @@ public class JoinGroupApiController {
             return ResponseEntity.status(400).build();
         }
 
-        return groupService.findByCode(groupCode).map(group -> {
-            boolean isCreator = group.getMembers().stream()
-                    .anyMatch(m -> requesterScreenName.equals(m.getScreenName()) && m.getRole() == GroupRole.CREATOR);
-            if (!isCreator) {
-                return ResponseEntity.status(403).<Group>build();
-            }
-            return groupService.setMemberRole(groupCode, targetScreenName, request.role())
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        }).orElse(ResponseEntity.notFound().build());
+        return groupService.findByCode(groupCode).map(group -> requireCreator(group, requesterScreenName, () ->
+                groupService.setMemberRole(groupCode, targetScreenName, request.role())
+                        .map(ResponseEntity::ok)
+                        .orElse(ResponseEntity.notFound().build())
+        )).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/{groupCode}/members/{targetScreenName}/transfer-creator")
@@ -88,16 +85,20 @@ public class JoinGroupApiController {
             return ResponseEntity.status(400).build();
         }
 
-        return groupService.findByCode(groupCode).map(group -> {
-            boolean isCreator = group.getMembers().stream()
-                    .anyMatch(m -> requesterScreenName.equals(m.getScreenName()) && m.getRole() == GroupRole.CREATOR);
-            if (!isCreator) {
-                return ResponseEntity.status(403).<Group>build();
-            }
-            return groupService.transferCreator(groupCode, requesterScreenName, targetScreenName)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        }).orElse(ResponseEntity.notFound().build());
+        return groupService.findByCode(groupCode).map(group -> requireCreator(group, requesterScreenName, () ->
+                groupService.transferCreator(groupCode, requesterScreenName, targetScreenName)
+                        .map(ResponseEntity::ok)
+                        .orElse(ResponseEntity.notFound().build())
+        )).orElse(ResponseEntity.notFound().build());
+    }
+
+    private static ResponseEntity<Group> requireCreator(Group group, String requesterScreenName, Supplier<ResponseEntity<Group>> action) {
+        boolean isCreator = group.getMembers().stream()
+                .anyMatch(m -> requesterScreenName.equals(m.getScreenName()) && m.getRole() == GroupRole.CREATOR);
+        if (!isCreator) {
+            return ResponseEntity.status(403).build();
+        }
+        return action.get();
     }
 
     @PutMapping("/{groupCode}/poe-session")
