@@ -111,22 +111,12 @@ public class TradeSearchService {
             query.stats(item.getStats());
         }
 
-        Map<QueryStat, Object> filters = new LinkedHashMap<>();
-        filters.put(QueryStat.ENERGY_SHIELD,    minMax(item.getEs(),             item.getMaxEs()));
-        filters.put(QueryStat.EVASION,          minMax(item.getEvasion(),        item.getMaxEvasion()));
-        filters.put(QueryStat.ARMOUR,           minMax(item.getArmour(),         item.getMaxArmour()));
-        filters.put(QueryStat.WARD,             minMax(item.getWard(),           item.getMaxWard()));
-        filters.put(QueryStat.BLOCK,            minMax(item.getBlock(),          item.getMaxBlock()));
-        filters.put(QueryStat.BASE_PERCENTILE,  minMax(item.getBasePercentile(), item.getMaxBasePercentile()));
+        Map<QueryStat, Object> filters = new LinkedHashMap<>(PathOfExileTradeApi.defenseFilters(item));
         if (StringUtils.isNotBlank(item.rarity)) {
             filters.put(QueryStat.RARITY, item.rarity.toLowerCase());
         }
         query.filterAll(filters);
 
         return query.toJson();
-    }
-
-    private static PoETradeQuery.MinMax minMax(int min, int max) {
-        return new PoETradeQuery.MinMax(min > 0 ? min : null, max > 0 ? max : null);
     }
 }

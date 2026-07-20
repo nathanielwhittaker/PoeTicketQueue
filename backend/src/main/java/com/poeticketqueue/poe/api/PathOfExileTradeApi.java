@@ -118,12 +118,7 @@ public abstract class PathOfExileTradeApi {
 
         Map<QueryStat, Object> filters = new LinkedHashMap<>();
         filters.put(QueryStat.GEM_LEVEL,        item.getGemLevel());
-        filters.put(QueryStat.ENERGY_SHIELD,    new PoETradeQuery.MinMax(nullIfZero(item.getEs()),             nullIfZero(item.getMaxEs())));
-        filters.put(QueryStat.EVASION,          new PoETradeQuery.MinMax(nullIfZero(item.getEvasion()),        nullIfZero(item.getMaxEvasion())));
-        filters.put(QueryStat.ARMOUR,           new PoETradeQuery.MinMax(nullIfZero(item.getArmour()),         nullIfZero(item.getMaxArmour())));
-        filters.put(QueryStat.WARD,             new PoETradeQuery.MinMax(nullIfZero(item.getWard()),           nullIfZero(item.getMaxWard())));
-        filters.put(QueryStat.BLOCK,            new PoETradeQuery.MinMax(nullIfZero(item.getBlock()),          nullIfZero(item.getMaxBlock())));
-        filters.put(QueryStat.BASE_PERCENTILE,  new PoETradeQuery.MinMax(nullIfZero(item.getBasePercentile()), nullIfZero(item.getMaxBasePercentile())));
+        filters.putAll(defenseFilters(item));
         filters.put(QueryStat.PHYSICAL_DPS,     item.getPDPS());
         filters.put(QueryStat.ELEMENTAL_DPS,    item.getEDPS());
         filters.put(QueryStat.LOCAL_CRIT,       item.getLocalCrit());
@@ -138,6 +133,17 @@ public abstract class PathOfExileTradeApi {
                 .filterAll(filters);
 
         return query.toJson();
+    }
+
+    public static Map<QueryStat, Object> defenseFilters(Item item) {
+        Map<QueryStat, Object> filters = new LinkedHashMap<>();
+        filters.put(QueryStat.ENERGY_SHIELD,    new PoETradeQuery.MinMax(nullIfZero(item.getEs()),             nullIfZero(item.getMaxEs())));
+        filters.put(QueryStat.EVASION,          new PoETradeQuery.MinMax(nullIfZero(item.getEvasion()),        nullIfZero(item.getMaxEvasion())));
+        filters.put(QueryStat.ARMOUR,           new PoETradeQuery.MinMax(nullIfZero(item.getArmour()),         nullIfZero(item.getMaxArmour())));
+        filters.put(QueryStat.WARD,             new PoETradeQuery.MinMax(nullIfZero(item.getWard()),           nullIfZero(item.getMaxWard())));
+        filters.put(QueryStat.BLOCK,            new PoETradeQuery.MinMax(nullIfZero(item.getBlock()),          nullIfZero(item.getMaxBlock())));
+        filters.put(QueryStat.BASE_PERCENTILE,  new PoETradeQuery.MinMax(nullIfZero(item.getBasePercentile()), nullIfZero(item.getMaxBasePercentile())));
+        return filters;
     }
 
     private static Integer nullIfZero(int val) {
