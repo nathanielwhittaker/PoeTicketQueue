@@ -87,6 +87,16 @@ const sessionSaved = ref(false)
 let pollTimer = null
 let mounted = false
 
+const dingSound = new Audio('/sounds/ding.mp3')
+let lastItemCount = queue.value.length
+
+function playDing() {
+  try {
+    dingSound.currentTime = 0
+    dingSound.play().catch(() => {})
+  } catch (e) {}
+}
+
 function onBeforeUnload() {
   const navType = performance.getEntriesByType('navigation')[0]?.type
   if (navType === 'reload') { return }
@@ -123,8 +133,13 @@ async function syncGroup() {
     const res = await fetch(`/api/groups/${group.code}`)
     if (res.ok && mounted) {
       const live = await res.json()
+      const shouldDing = canTrade.value && live.itemQueue.length > lastItemCount
+      lastItemCount = live.itemQueue.length
       queue.value = live.itemQueue
       members.value = live.members
+      if (shouldDing) {
+        playDing()
+      }
     }
   } catch (e) {
     console.warn('Poll failed', e)
@@ -160,6 +175,7 @@ async function removeItem(index) {
   if (response.ok) {
     const updated = await response.json()
     queue.value = updated.itemQueue
+    lastItemCount = updated.itemQueue.length
   }
 }
 
@@ -176,7 +192,10 @@ async function onBuy(index) {
     window.open(tradeUrl, '_blank')
   }
 }
-function onItemAdded(items) { queue.value = items }
+function onItemAdded(items) {
+  queue.value = items
+  lastItemCount = items.length
+}
 
 async function onSetRole({ screenName, role }) {
   await fetch(`/api/groups/${group.code}/members/${encodeURIComponent(screenName)}/role`, {
