@@ -18,7 +18,7 @@ public class BuildUtils {
             if (buildType == null) {
                 throw new IllegalArgumentException("Could not determine build type for: " + importResult.rawBuildImportData());
             }
-            results.add(Build.of(buildType, importResult));
+            results.add(Build.of(buildType, importResult, false));
         }
         return results;
     }

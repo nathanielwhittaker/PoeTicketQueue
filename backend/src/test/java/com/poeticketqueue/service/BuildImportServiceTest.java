@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Deterministic, network-FREE contract tests for {@link BuildImportService#importBuild(String, PoeVersion)}.
+ * Deterministic, network-FREE contract tests for {@link BuildImportService#importBuild(String, PoeVersion, boolean)}.
  *
  * <p>These cover ONLY the input-validation branches that return an outcome BEFORE any outbound
  * fetch is attempted: the blank-URL guard and the SSRF host-allowlist ({@code isAllowedPobbinUrl}).
@@ -26,7 +26,7 @@ class BuildImportServiceTest {
     private final BuildImportService service = new BuildImportService();
 
     private void assertRejected(String url, String expectedMessage) {
-        BuildImportOutcome outcome = service.importBuild(url, PoeVersion.POE1);
+        BuildImportOutcome outcome = service.importBuild(url, PoeVersion.POE1, false);
 
         assertThat(outcome.status()).isEqualTo(BuildImportOutcome.Status.INVALID_URL);
         assertThat(outcome.message()).isEqualTo(expectedMessage);

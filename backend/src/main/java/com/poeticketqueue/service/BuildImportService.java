@@ -44,7 +44,7 @@ public class BuildImportService {
         }
     }
 
-    public BuildImportOutcome importBuild(String url, PoeVersion groupVersion) {
+    public BuildImportOutcome importBuild(String url, PoeVersion groupVersion, boolean useTrueValues) {
         if (StringUtils.isBlank(url)) {
             return BuildImportOutcome.invalidUrl("Please paste a pobb.in build URL.");
         }
@@ -60,7 +60,7 @@ public class BuildImportService {
 
         Build build;
         try {
-            build = Build.of(type, new BuildImporterResult(null, url));
+            build = Build.of(type, new BuildImporterResult(null, url), useTrueValues);
         } catch (Exception e) {
             log.warn("importBuild() -- failed to parse build from {}", url, e);
             return BuildImportOutcome.invalidUrl("Could not read that build from pobb.in. Check the link and try again.");

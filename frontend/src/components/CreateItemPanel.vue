@@ -93,6 +93,10 @@
           @input="importError = ''"
         />
       </div>
+      <label class="checkbox-row">
+        <input type="checkbox" v-model="useTrueValues" />
+        Use true item values
+      </label>
       <p v-if="importError" class="error">{{ importError }}</p>
       <button
         type="button"
@@ -150,6 +154,7 @@ const adding = ref(false)
 const error = ref('')
 const showDropdown = ref(false)
 const buildUrl = ref('')
+const useTrueValues = ref(false)
 const importing = ref(false)
 const importError = ref('')
 
@@ -272,12 +277,13 @@ async function handleImportBuild() {
     const res = await fetch(`/api/groups/${props.groupCode}/builds`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: buildUrl.value }),
+      body: JSON.stringify({ url: buildUrl.value, useTrueValues: useTrueValues.value }),
     })
     if (res.ok) {
       const updated = await res.json()
       emit('build-imported', updated)
       buildUrl.value = ''
+      useTrueValues.value = false
     } else {
       const body = await res.json().catch(() => ({}))
       importError.value = body.message || 'Import failed.'
@@ -455,6 +461,17 @@ input[type="text"]:focus {
 .btn-add-group:hover {
   background: var(--color-hover-surface-3);
   border-color: var(--color-text-optional);
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+  text-transform: none;
+  font-weight: 400;
 }
 
 .error {
