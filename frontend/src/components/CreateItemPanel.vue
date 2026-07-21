@@ -257,7 +257,7 @@ h2 {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #555;
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
@@ -270,7 +270,7 @@ h2 {
 label {
   font-size: 12px;
   font-weight: 600;
-  color: #666;
+  color: var(--color-text-label);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -278,10 +278,10 @@ label {
 .section-label {
   font-size: 12px;
   font-weight: 600;
-  color: #666;
+  color: var(--color-text-label);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border-light);
   padding-bottom: 6px;
   display: flex;
   align-items: center;
@@ -291,28 +291,29 @@ label {
 }
 
 .section-label:hover {
-  color: #444;
+  color: var(--color-text-secondary);
 }
 
 .chevron {
   font-size: 9px;
-  color: #aaa;
+  color: var(--color-text-faint);
 }
 
 input[type="text"] {
   width: 100%;
   padding: 8px 10px;
   font-size: 14px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   outline: none;
   transition: border-color 0.15s;
-  background: #fff;
+  background: var(--color-surface);
+  color: var(--color-text);
   box-sizing: border-box;
 }
 
 input[type="text"]:focus {
-  border-color: #4a90e2;
+  border-color: var(--color-accent);
 }
 
 .autocomplete {
@@ -325,10 +326,10 @@ input[type="text"]:focus {
   top: calc(100% + 4px);
   left: 0;
   right: 0;
-  background: #fff;
-  border: 1px solid #ccc;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 12px var(--color-shadow);
   list-style: none;
   margin: 0;
   padding: 4px 0;
@@ -347,18 +348,18 @@ input[type="text"]:focus {
 }
 
 .dropdown-item:hover {
-  background: #f0f5fc;
+  background: var(--color-accent-soft);
 }
 
 .suggestion-text {
   font-size: 14px;
   font-weight: 500;
-  color: #222;
+  color: var(--color-text);
 }
 
 .suggestion-detail {
   font-size: 12px;
-  color: #999;
+  color: var(--color-text-optional);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -393,9 +394,9 @@ input[type="text"]:focus {
   padding: 7px 14px;
   font-size: 13px;
   font-weight: 600;
-  color: #555;
+  color: var(--color-text-secondary);
   background: none;
-  border: 1px dashed #bbb;
+  border: 1px dashed var(--color-border-dashed);
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s;
@@ -403,12 +404,12 @@ input[type="text"]:focus {
 }
 
 .btn-add-group:hover {
-  background: #f0f0f0;
-  border-color: #999;
+  background: var(--color-hover-surface-3);
+  border-color: var(--color-text-optional);
 }
 
 .error {
-  color: #d9534f;
+  color: var(--color-danger);
   font-size: 13px;
   margin: 0;
 }
@@ -417,8 +418,8 @@ input[type="text"]:focus {
   padding: 10px 16px;
   font-size: 15px;
   font-weight: 600;
-  color: white;
-  background: #4a90e2;
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -427,11 +428,11 @@ input[type="text"]:focus {
 }
 
 .btn-submit:hover:not(:disabled) {
-  background: #357abd;
+  background: var(--color-accent-hover);
 }
 
 .btn-submit:disabled {
-  background: #a0bde0;
+  background: var(--color-accent-disabled);
   cursor: not-allowed;
 }
 </style>

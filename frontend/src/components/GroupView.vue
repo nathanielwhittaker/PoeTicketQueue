@@ -247,7 +247,7 @@ async function onTransferCreator({ screenName }) {
   justify-content: center;
   gap: 16px;
   padding: 16px 24px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .header h1 {
@@ -258,8 +258,8 @@ async function onTransferCreator({ screenName }) {
 .code {
   font-size: 13px;
   font-weight: 700;
-  color: #fff;
-  background: #4a90e2;
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
   padding: 3px 10px;
   border-radius: 12px;
   letter-spacing: 0.08em;
@@ -268,7 +268,7 @@ async function onTransferCreator({ screenName }) {
 .league {
   font-size: 13px;
   font-weight: 600;
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .columns {
@@ -284,7 +284,7 @@ async function onTransferCreator({ screenName }) {
 .column--members {
   width: 200px;
   flex-shrink: 0;
-  border-right: 1px solid #e0e0e0;
+  border-right: 1px solid var(--color-border-light);
 }
 
 .column--queue {
@@ -302,14 +302,14 @@ async function onTransferCreator({ screenName }) {
 .resizer {
   width: 5px;
   flex-shrink: 0;
-  background: #e0e0e0;
+  background: var(--color-border-light);
   cursor: col-resize;
   transition: background 0.15s;
 }
 
 .resizer:hover,
 .resizer.active {
-  background: #4a90e2;
+  background: var(--color-accent);
 }
 
 h2 {
@@ -317,12 +317,12 @@ h2 {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #555;
+  color: var(--color-text-secondary);
   margin: 0 0 12px;
 }
 
 .empty {
-  color: #aaa;
+  color: var(--color-text-faint);
   font-size: 14px;
   margin-bottom: 16px;
 }
@@ -345,13 +345,13 @@ h2 {
   padding-top: 13px;
   font-size: 13px;
   font-weight: 700;
-  color: #aaa;
+  color: var(--color-text-faint);
   text-align: right;
 }
 
 .session-id-section {
   padding: 12px 16px 16px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--color-border-light);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -362,30 +362,32 @@ h2 {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .session-id-input {
   width: 100%;
   padding: 6px 8px;
   font-size: 13px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.15s;
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .session-id-input:focus {
-  border-color: #4a90e2;
+  border-color: var(--color-accent);
 }
 
 .session-id-btn {
   padding: 6px 10px;
   font-size: 13px;
   font-weight: 600;
-  color: white;
-  background: #4a90e2;
+  color: var(--color-accent-contrast);
+  background: var(--color-accent);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -394,23 +396,23 @@ h2 {
 }
 
 .session-id-btn:hover:not(:disabled) {
-  background: #357abd;
+  background: var(--color-accent-hover);
 }
 
 .session-id-btn:disabled {
-  background: #a0bde0;
+  background: var(--color-accent-disabled);
   cursor: not-allowed;
 }
 
 .session-saved {
   font-size: 12px;
-  color: #4caf50;
+  color: var(--color-success);
   margin: 0;
 }
 
 .optional {
   font-weight: 400;
-  color: #999;
+  color: var(--color-text-optional);
   font-size: 11px;
   text-transform: none;
   letter-spacing: 0;
