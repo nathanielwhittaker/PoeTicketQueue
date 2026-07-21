@@ -19,6 +19,12 @@
           <span class="defense-value">{{ d.max ? `${d.min}–${d.max}` : d.min }}</span>
         </span>
       </div>
+      <div v-if="weaponDps.length > 0" class="defenses">
+        <span v-for="d in weaponDps" :key="d.label" class="defense-chip">
+          <span class="defense-label">{{ d.label }}</span>
+          <span class="defense-value">{{ d.value }}</span>
+        </span>
+      </div>
       <template v-if="item.statGroups && item.statGroups.length > 0">
         <div v-for="(group, gi) in item.statGroups" :key="gi" class="stat-group">
           <div v-if="groupLabel(group)" class="group-label">{{ groupLabel(group) }}</div>
@@ -89,6 +95,17 @@ const defenses = computed(() =>
     .filter(f => props.item[f.key] > 0)
     .map(f => ({ label: f.label, min: props.item[f.key], max: props.item[f.maxKey] > 0 ? props.item[f.maxKey] : null }))
 )
+
+const weaponDps = computed(() => {
+  const p = props.item.pdps || 0
+  const e = props.item.edps || 0
+  if (p <= 0 && e <= 0) { return [] }
+  const chips = []
+  if (p > 0) { chips.push({ label: 'pDPS', value: p }) }
+  if (e > 0) { chips.push({ label: 'eDPS', value: e }) }
+  chips.push({ label: 'Total DPS', value: p + e })
+  return chips
+})
 
 const rarityClass = computed(() => {
   switch ((props.item.rarity || '').toUpperCase()) {
