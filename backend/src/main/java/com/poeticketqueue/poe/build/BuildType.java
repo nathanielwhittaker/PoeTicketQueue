@@ -1,14 +1,14 @@
 package com.poeticketqueue.poe.build;
 
 import com.poeticketqueue.poe.importer.BuildImporterResult;
-import com.poeticketqueue.poe.util.Web;
+import com.poeticketqueue.poe.importer.PobbinImportFetcher;
 
 public enum BuildType {
     POBBIN {
         @Override
         public Build create(BuildImporterResult importResult, boolean useTrueValues) {
             String url = importResult.rawBuildImportData();
-            String html = new Web(url).getResponse();
+            String html = PobbinImportFetcher.fetch(url);
             String pobbinName = Pobbin.parseNameFromHtml(html);
             String name = importResult.name() != null ? importResult.name() : pobbinName;
             if (pobbinName.trim().endsWith("[PoE 2]")) {

@@ -6,42 +6,23 @@ import com.poeticketqueue.poe.build.BuildType;
 import com.poeticketqueue.poe.build.PoeVersion;
 import com.poeticketqueue.poe.build.PoeVersionDelegatingGameVersion;
 import com.poeticketqueue.poe.importer.BuildImporterResult;
+import com.poeticketqueue.poe.importer.PobbinImportFetcher;
 import com.poeticketqueue.poe.item.Item;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class BuildImportService {
 
     private static final Logger log = LoggerFactory.getLogger(BuildImportService.class);
 
-    private static final Set<String> ALLOWED_HOSTS = Set.of("pobb.in", "www.pobb.in");
-
     private static boolean isAllowedPobbinUrl(String url) {
-        try {
-            URI uri = URI.create(url.trim());
-            String scheme = uri.getScheme();
-            String host = uri.getHost();
-            if (scheme == null || host == null) {
-                return false;
-            }
-            if (!scheme.equalsIgnoreCase("https")) {
-                return false;
-            }
-            if (uri.getUserInfo() != null) {
-                return false;
-            }
-            return ALLOWED_HOSTS.contains(host.toLowerCase());
-        } catch (Exception e) {
-            return false;
-        }
+        return PobbinImportFetcher.isAllowedUrl(url);
     }
 
     public BuildImportOutcome importBuild(String url, PoeVersion groupVersion, boolean useTrueValues) {
