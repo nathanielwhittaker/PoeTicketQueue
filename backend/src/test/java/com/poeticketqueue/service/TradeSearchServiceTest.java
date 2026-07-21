@@ -123,6 +123,29 @@ class TradeSearchServiceTest {
     }
 
     @Test
+    void nonUniqueItem_withSelectedCategory_includesCategoryInQuery() throws Exception {
+        Item item = new Item("Astral Plate", "RARE", "Astral Plate");
+        item.category = "Body Armour";
+
+        String json = service.buildQuery(item, "Standard");
+
+        JsonNode category = objectMapper.readTree(json)
+                .path("query").path("filters").path("type_filters").path("filters").path("category");
+        assertThat(category.path("option").asText()).isEqualTo("armour.chest");
+    }
+
+    @Test
+    void itemWithoutSelectedCategory_omitsCategoryFromQuery() throws Exception {
+        Item item = new Item("Astral Plate", "RARE", "Astral Plate");
+
+        String json = service.buildQuery(item, "Standard");
+
+        JsonNode filters = objectMapper.readTree(json)
+                .path("query").path("filters").path("type_filters").path("filters");
+        assertThat(filters.has("category")).isFalse();
+    }
+
+    @Test
     void poe2Item_weaponFilterLandsUnderEquipmentFilters() throws Exception {
         PathOfExileTradeApi api = PoeVersion.POE2.getTradeApi();
         Item item = new Item("Vaal Axe", "RARE", "Vaal Axe", "Vaal Axe", new java.util.ArrayList<>(),

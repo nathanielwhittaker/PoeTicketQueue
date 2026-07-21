@@ -237,13 +237,7 @@ function resolveRarity() {
   )
   if (match?.unique) return 'UNIQUE'
 
-  const nonBaseCount = filterGroups.value
-    .flatMap(g => g.filters)
-    .filter(f => f.text && f.text.trim() !== '')
-    .filter(f => !f.statId || (!f.statId.startsWith('enchant.') && !f.statId.startsWith('implicit.')))
-    .length
-
-  return nonBaseCount >= 1 ? 'RARE' : 'NORMAL'
+  return 'RARE'
 }
 
 function onBlur() {
@@ -271,6 +265,7 @@ async function handleAddItem() {
         name: isUnique ? itemName.value : null,
         rarity,
         baseType: isUnique ? itemBaseType.value : itemName.value,
+        category: isUnique ? null : itemBaseType.value,
         filterGroups: filterGroups.value.map(g => ({
           type: g.type,
           countMin: g.countMin,

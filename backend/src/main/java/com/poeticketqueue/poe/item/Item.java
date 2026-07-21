@@ -30,6 +30,7 @@ public class Item implements Serializable {
     public String text;
     public Flags flags;
     public String baseType;
+    public String category;
     public String rarity;
     public String queuedBy;
     public int es;
@@ -121,6 +122,8 @@ public class Item implements Serializable {
     public int getEvasion()        { return evasion; }
     public int getArmour()         { return armour; }
     public String getBaseType()    { return baseType; }
+    public String getCategory()    { return category; }
+    public void setCategory(String category) { this.category = category; }
     public int getEDPS()           { return edps; }
     public int getPDPS()           { return pdps; }
     public int getIlvl()           { return ilvl; }

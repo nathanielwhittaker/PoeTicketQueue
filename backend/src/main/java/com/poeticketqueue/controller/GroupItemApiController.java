@@ -50,6 +50,7 @@ public class GroupItemApiController {
     @PostMapping("/{groupCode}/items")
     public ResponseEntity<Group> addItem(@PathVariable String groupCode, @RequestBody AddItemRequest request, HttpSession session) {
         Item item = new Item(request.name(), request.rarity(), request.baseType());
+        item.category = request.category();
         item.queuedBy = (String) session.getAttribute(SessionAttributes.SCREEN_NAME);
         if (request.filterGroups() != null) {
             List<StatGroup> groups = request.filterGroups().stream()
@@ -191,7 +192,7 @@ public class GroupItemApiController {
         return val != null ? val : 0;
     }
 
-    record AddItemRequest(String name, String rarity, String baseType, List<FilterGroupRequest> filterGroups, ArmourFiltersRequest armourFilters, WeaponFiltersRequest weaponFilters) {}
+    record AddItemRequest(String name, String rarity, String baseType, String category, List<FilterGroupRequest> filterGroups, ArmourFiltersRequest armourFilters, WeaponFiltersRequest weaponFilters) {}
     record ArmourFiltersRequest(MinMax ar, MinMax ev, MinMax es, MinMax ward, MinMax block, MinMax basePercentile) {}
     record WeaponFiltersRequest(MinMax damage, MinMax crit, MinMax pdps, MinMax edps, MinMax aps) {}
     record MinMax(Integer min, Integer max) {}
