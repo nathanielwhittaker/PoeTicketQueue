@@ -151,9 +151,9 @@ function removeStat(fi) {
 
 <style scoped>
 .filter-group {
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-strong);
   border-radius: 8px;
-  background: #fafafa;
+  background: var(--color-surface-muted);
 }
 
 .group-header {
@@ -161,14 +161,14 @@ function removeStat(fi) {
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  background: #f0f0f0;
-  border-bottom: 1px solid #ddd;
+  background: var(--color-surface-header);
+  border-bottom: 1px solid var(--color-border-strong);
   border-radius: 8px 8px 0 0;
 }
 
 .type-tabs {
   display: flex;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 5px;
   overflow: hidden;
   flex-shrink: 0;
@@ -181,24 +181,24 @@ function removeStat(fi) {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   border: none;
-  background: #fff;
-  color: #888;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
 }
 
 .type-tab + .type-tab {
-  border-left: 1px solid #ccc;
+  border-left: 1px solid var(--color-border);
 }
 
 .type-tab.active {
-  background: #4a90e2;
-  color: #fff;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
 }
 
 .type-tab:hover:not(.active) {
-  background: #e8e8e8;
-  color: #555;
+  background: var(--color-hover-surface);
+  color: var(--color-text-secondary);
 }
 
 .count-range {
@@ -211,7 +211,7 @@ function removeStat(fi) {
 .count-label {
   font-size: 12px;
   font-weight: 600;
-  color: #666;
+  color: var(--color-text-label);
 }
 
 input.count-input {
@@ -220,7 +220,7 @@ input.count-input {
 }
 
 .range-sep {
-  color: #aaa;
+  color: var(--color-text-faint);
   font-size: 14px;
 }
 
@@ -229,14 +229,14 @@ input.count-input {
   border: none;
   cursor: pointer;
   font-size: 9px;
-  color: #aaa;
+  color: var(--color-text-faint);
   padding: 4px 4px;
   line-height: 1;
   flex-shrink: 0;
 }
 
 .collapse-btn:hover {
-  color: #555;
+  color: var(--color-text-secondary);
 }
 
 .header-remove {
@@ -248,7 +248,7 @@ input.count-input {
   border: none;
   cursor: pointer;
   font-size: 13px;
-  color: #aaa;
+  color: var(--color-text-faint);
   padding: 4px 6px;
   border-radius: 4px;
   line-height: 1;
@@ -257,8 +257,8 @@ input.count-input {
 }
 
 .btn-icon:hover {
-  color: #d9534f;
-  background: #fdf0ef;
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
 }
 
 .stat-rows {
@@ -270,7 +270,7 @@ input.count-input {
 
 .no-stats {
   font-size: 13px;
-  color: #bbb;
+  color: var(--color-text-faint);
   padding: 4px 0;
 }
 
@@ -291,10 +291,10 @@ input.count-input {
   top: calc(100% + 3px);
   left: 0;
   right: 0;
-  background: #fff;
-  border: 1px solid #ccc;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 12px var(--color-shadow);
   list-style: none;
   margin: 0;
   padding: 4px 0;
@@ -314,7 +314,7 @@ input.count-input {
 }
 
 .dropdown-item:hover {
-  background: #f0f5fc;
+  background: var(--color-accent-soft);
 }
 
 .stat-type {
@@ -330,7 +330,7 @@ input.count-input {
 
 .stat-text {
   font-size: 13px;
-  color: #222;
+  color: var(--color-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -340,18 +340,19 @@ input[type="text"],
 input[type="number"] {
   padding: 8px 10px;
   font-size: 14px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   outline: none;
   transition: border-color 0.15s;
-  background: #fff;
+  background: var(--color-surface);
+  color: var(--color-text);
   box-sizing: border-box;
   width: 100%;
 }
 
 input[type="text"]:focus,
 input[type="number"]:focus {
-  border-color: #4a90e2;
+  border-color: var(--color-accent);
 }
 
 input[type="number"]::-webkit-inner-spin-button,
@@ -371,9 +372,9 @@ input.stat-val {
   padding: 5px 10px;
   font-size: 12px;
   font-weight: 600;
-  color: #4a90e2;
+  color: var(--color-accent);
   background: none;
-  border: 1px dashed #4a90e2;
+  border: 1px dashed var(--color-accent);
   border-radius: 5px;
   cursor: pointer;
   transition: background 0.12s;
@@ -381,6 +382,6 @@ input.stat-val {
 }
 
 .btn-add-stat:hover {
-  background: #eef4fc;
+  background: var(--color-accent-soft-3);
 }
 </style>

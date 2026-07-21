@@ -111,7 +111,7 @@ h2 {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #555;
+  color: var(--color-text-secondary);
   margin-bottom: 12px;
 }
 
@@ -133,9 +133,9 @@ ul {
   align-items: center;
   gap: 6px;
   padding: 8px 10px;
-  background: #f5f5f5;
+  background: var(--color-surface-alt);
   border-radius: 6px;
-  color: #333;
+  color: var(--color-text);
   user-select: none;
 }
 
@@ -144,7 +144,7 @@ ul {
 }
 
 .member-chip.clickable:hover {
-  background: #ebebeb;
+  background: var(--color-hover-surface-2);
 }
 
 .name {
@@ -167,25 +167,25 @@ ul {
 }
 
 .badge-creator {
-  background: #fff3cd;
-  color: #856404;
-  border: 1px solid #ffc107;
+  background: var(--color-badge-creator-bg);
+  color: var(--color-badge-creator-text);
+  border: 1px solid var(--color-badge-creator-border);
 }
 
 .badge-trader {
-  background: #cce5ff;
-  color: #004085;
-  border: 1px solid #4a90e2;
+  background: var(--color-badge-trader-bg);
+  color: var(--color-badge-trader-text);
+  border: 1px solid var(--color-badge-trader-border);
 }
 </style>
 
 <style>
 .popup {
   position: fixed;
-  background: white;
-  border: 1px solid #ddd;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
   border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 16px var(--color-shadow-strong);
   min-width: 170px;
   z-index: 1000;
   padding: 6px 0;
@@ -201,25 +201,25 @@ ul {
   background: none;
   border: none;
   cursor: pointer;
-  color: #333;
+  color: var(--color-text);
   transition: background 0.1s;
 }
 
 .popup-btn:hover {
-  background: #f0f5fc;
+  background: var(--color-accent-soft);
 }
 
 .popup-btn-danger {
-  color: #c0392b;
+  color: var(--color-danger-strong);
 }
 
 .popup-btn-danger:hover {
-  background: #fdf0f0;
+  background: var(--color-danger-soft);
 }
 
 .popup-divider {
   height: 1px;
-  background: #eee;
+  background: var(--color-border-faint);
   margin: 4px 0;
 }
 </style>

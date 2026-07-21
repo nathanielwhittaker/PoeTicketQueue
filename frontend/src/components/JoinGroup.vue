@@ -108,25 +108,27 @@ label {
 
 .optional {
   font-weight: 400;
-  color: #999;
+  color: var(--color-text-optional);
   font-size: 12px;
 }
 
 input {
   padding: 10px 12px;
   font-size: 16px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   outline: none;
   transition: border-color 0.15s;
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 input:focus {
-  border-color: #4a90e2;
+  border-color: var(--color-accent);
 }
 
 .error {
-  color: #d9534f;
+  color: var(--color-danger);
   font-size: 14px;
   margin: 0;
 }
@@ -135,8 +137,8 @@ button {
   padding: 12px;
   font-size: 16px;
   font-weight: 600;
-  color: white;
-  background-color: #4a90e2;
+  color: var(--color-accent-contrast);
+  background-color: var(--color-accent);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -144,21 +146,21 @@ button {
 }
 
 button:hover:not(:disabled) {
-  background-color: #357abd;
+  background-color: var(--color-accent-hover);
 }
 
 button:disabled {
-  background-color: #a0bde0;
+  background-color: var(--color-accent-disabled);
   cursor: not-allowed;
 }
 
 button[type="button"] {
-  background-color: white;
-  color: #4a90e2;
-  border: 2px solid #4a90e2;
+  background-color: var(--color-surface);
+  color: var(--color-accent);
+  border: 2px solid var(--color-accent);
 }
 
 button[type="button"]:hover {
-  background-color: #f0f6ff;
+  background-color: var(--color-accent-soft-2);
 }
 </style>
