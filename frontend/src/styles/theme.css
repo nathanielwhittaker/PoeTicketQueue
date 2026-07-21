@@ -1,0 +1,88 @@
+:root {
+  color-scheme: light;
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;          /* inputs, dropdowns, popups, plain cards */
+  --color-surface-alt: #f5f5f5;      /* member chips, disabled inputs, toggle-btn bg */
+  --color-surface-muted: #fafafa;    /* filter-group bg */
+  --color-surface-header: #f0f0f0;   /* group-header bg */
+  --color-text: #222222;
+  --color-text-secondary: #555555;   /* section headings (h2) */
+  --color-text-label: #666666;       /* field labels */
+  --color-text-muted: #888888;       /* muted labels */
+  --color-text-faint: #aaaaaa;       /* placeholders, chevrons, position numbers, no-stats */
+  --color-text-optional: #999999;    /* "(optional)" text, cat-api */
+  --color-border: #cccccc;           /* input borders, toggle-group */
+  --color-border-light: #e0e0e0;     /* dividers, section-label underline, resizer */
+  --color-border-strong: #dddddd;    /* card/popup/filter-group borders */
+  --color-border-faint: #eeeeee;     /* popup divider */
+  --color-border-dashed: #bbbbbb;    /* dashed add-group border */
+  --color-accent: #4a90e2;
+  --color-accent-hover: #357abd;
+  --color-accent-disabled: #a0bde0;
+  --color-accent-contrast: #ffffff;  /* text on accent */
+  --color-accent-soft: #f0f5fc;      /* dropdown/popup hover fill */
+  --color-accent-soft-2: #f0f6ff;    /* secondary/outline button hover */
+  --color-accent-soft-3: #eef4fc;    /* add-stat hover */
+  --color-hover-surface: #e8e8e8;    /* toggle-btn / type-tab hover */
+  --color-hover-surface-2: #ebebeb;  /* member-chip hover */
+  --color-hover-surface-3: #f0f0f0;  /* add-group hover */
+  --color-danger: #d9534f;
+  --color-danger-strong: #c0392b;    /* popup danger text */
+  --color-danger-soft: #fdf0ef;      /* danger hover bg (also covers #fdf0f0) */
+  --color-success: #4caf50;
+  --color-shadow: rgba(0, 0, 0, 0.12);
+  --color-shadow-strong: rgba(0, 0, 0, 0.15);
+  --color-badge-creator-bg: #fff3cd;
+  --color-badge-creator-text: #856404;
+  --color-badge-creator-border: #ffc107;
+  --color-badge-trader-bg: #cce5ff;
+  --color-badge-trader-text: #004085;
+  --color-badge-trader-border: #4a90e2;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #17181c;
+  --color-surface: #202227;
+  --color-surface-alt: #2a2d33;
+  --color-surface-muted: #1e2024;
+  --color-surface-header: #26282e;
+  --color-text: #e6e6e6;
+  --color-text-secondary: #c4c4c4;
+  --color-text-label: #a8acb3;
+  --color-text-muted: #9a9ea5;
+  --color-text-faint: #71757c;
+  --color-text-optional: #8a8e95;
+  --color-border: #3a3d44;
+  --color-border-light: #33363c;
+  --color-border-strong: #3a3d44;
+  --color-border-faint: #33363c;
+  --color-border-dashed: #4a4d54;
+  --color-accent: #4a90e2;
+  --color-accent-hover: #5b9ee8;
+  --color-accent-disabled: #33455c;
+  --color-accent-contrast: #ffffff;
+  --color-accent-soft: #22303f;
+  --color-accent-soft-2: #22303f;
+  --color-accent-soft-3: #22303f;
+  --color-hover-surface: #33363c;
+  --color-hover-surface-2: #33363c;
+  --color-hover-surface-3: #2f3238;
+  --color-danger: #e0625e;
+  --color-danger-strong: #e0625e;
+  --color-danger-soft: #3a2422;
+  --color-success: #57b862;
+  --color-shadow: rgba(0, 0, 0, 0.5);
+  --color-shadow-strong: rgba(0, 0, 0, 0.6);
+  --color-badge-creator-bg: #3a3113;
+  --color-badge-creator-text: #ffd257;
+  --color-badge-creator-border: #8a6d1a;
+  --color-badge-trader-bg: #16283f;
+  --color-badge-trader-text: #7db3ef;
+  --color-badge-trader-border: #2f5c8f;
+}
+
+html, body {
+  background: var(--color-bg);
+  color: var(--color-text);
+}

@@ -104,7 +104,7 @@ const rarityClass = computed(() => {
 
 <style scoped>
 .item {
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-strong);
   border-radius: 8px;
   overflow: hidden;
   width: 100%;
@@ -118,11 +118,12 @@ const rarityClass = computed(() => {
 }
 
 .rarity-none {
-  background: #fff;
+  background: var(--color-surface);
 }
-.rarity-none .item-name { color: #222; }
-.rarity-none .toggle { color: #aaa; }
-.rarity-none .toggle:hover { color: #555; }
+.rarity-none .item-name { color: var(--color-text); }
+.rarity-none .toggle { color: var(--color-text-faint); }
+.rarity-none .toggle:hover { color: var(--color-text-secondary); }
+.rarity-none .queued-by { color: var(--color-text-faint); }
 
 .rarity-normal {
   background: #2b2b2b;

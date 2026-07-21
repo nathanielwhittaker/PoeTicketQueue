@@ -188,10 +188,10 @@ function clearCategory() {
 .section-label {
   font-size: 12px;
   font-weight: 600;
-  color: #666;
+  color: var(--color-text-label);
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid var(--color-border-light);
   padding-bottom: 6px;
   display: flex;
   align-items: center;
@@ -201,12 +201,12 @@ function clearCategory() {
 }
 
 .section-label:hover {
-  color: #444;
+  color: var(--color-text-secondary);
 }
 
 .chevron {
   font-size: 9px;
-  color: #aaa;
+  color: var(--color-text-faint);
 }
 
 .filter-row {
@@ -218,7 +218,7 @@ function clearCategory() {
 .row-label {
   font-size: 12px;
   font-weight: 600;
-  color: #666;
+  color: var(--color-text-label);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   width: 62px;
@@ -264,16 +264,17 @@ input[type="text"] {
   width: 100%;
   padding: 7px 28px 7px 10px;
   font-size: 14px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   outline: none;
   transition: border-color 0.15s;
-  background: #fff;
+  background: var(--color-surface);
+  color: var(--color-text);
   box-sizing: border-box;
 }
 
 input[type="text"]:focus {
-  border-color: #4a90e2;
+  border-color: var(--color-accent);
 }
 
 .clear-btn {
@@ -284,23 +285,23 @@ input[type="text"]:focus {
   background: none;
   border: none;
   font-size: 16px;
-  color: #aaa;
+  color: var(--color-text-faint);
   cursor: pointer;
   padding: 0 2px;
   line-height: 1;
 }
 
-.clear-btn:hover { color: #555; }
+.clear-btn:hover { color: var(--color-text-secondary); }
 
 .dropdown {
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
   right: 0;
-  background: #fff;
-  border: 1px solid #ccc;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 12px var(--color-shadow);
   list-style: none;
   margin: 0;
   padding: 4px 0;
@@ -315,7 +316,7 @@ input[type="text"]:focus {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #aaa;
+  color: var(--color-text-faint);
   pointer-events: none;
 }
 
@@ -331,18 +332,18 @@ input[type="text"]:focus {
 
 .dropdown-item:hover,
 .dropdown-item.selected {
-  background: #f0f5fc;
+  background: var(--color-accent-soft);
 }
 
 .cat-label {
   font-size: 14px;
   font-weight: 500;
-  color: #222;
+  color: var(--color-text);
 }
 
 .cat-api {
   font-size: 11px;
-  color: #aaa;
+  color: var(--color-text-optional);
   font-family: monospace;
 }
 </style>
