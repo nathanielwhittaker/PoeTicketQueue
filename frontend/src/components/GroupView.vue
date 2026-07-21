@@ -195,6 +195,9 @@ async function onBuy(index) {
 function onItemAdded(items) {
   queue.value = items
   lastItemCount = items.length
+  if (canTrade.value) {
+    playDing()
+  }
 }
 
 async function onSetRole({ screenName, role }) {
