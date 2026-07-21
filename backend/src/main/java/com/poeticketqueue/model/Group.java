@@ -13,6 +13,7 @@ public class Group {
     private PoeVersion poeVersion;
     private String league;
     private final List<Item> itemQueue = new ArrayList<>();
+    private final List<QueuedBuild> buildQueue = new ArrayList<>();
     private final List<Member> members = new ArrayList<>();
 
     public Group(String name, String code, PoeVersion poeVersion, String league) {
@@ -48,6 +49,10 @@ public class Group {
 
     public List<Item> getItemQueue() {
         return itemQueue;
+    }
+
+    public List<QueuedBuild> getBuildQueue() {
+        return buildQueue;
     }
 
     public List<Member> getMembers() {

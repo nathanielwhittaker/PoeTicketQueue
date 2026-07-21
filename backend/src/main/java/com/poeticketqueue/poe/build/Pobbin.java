@@ -8,6 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
@@ -17,6 +20,8 @@ import java.util.zip.InflaterInputStream;
 public abstract class Pobbin extends Build {
 
     private static final Logger log = LoggerFactory.getLogger(Pobbin.class);
+
+    private static final int MAX_DECOMPRESSED_BYTES = 16 * 1024 * 1024;
 
     private final String url;
     private final String name;
@@ -78,8 +83,10 @@ public abstract class Pobbin extends Build {
         if (StringUtils.isNotBlank(pobXml)) {
             byte[] bytes = Base64.getUrlDecoder().decode(pobXml);
             try (InflaterInputStream gis = new InflaterInputStream(new ByteArrayInputStream(bytes))) {
-                this.buildData = new String(gis.readAllBytes(), StandardCharsets.UTF_8);
+                this.buildData = new String(readBounded(gis, MAX_DECOMPRESSED_BYTES), StandardCharsets.UTF_8);
                 return this;
+            } catch (BuildDataTooLargeException e) {
+                throw e;
             } catch (Exception e) {
                 log.error("Failed to decompress PobXML build data", e);
             }
@@ -87,6 +94,27 @@ public abstract class Pobbin extends Build {
             throw new NullPointerException("Cannot parse null.");
         }
         return null;
+    }
+
+    private static byte[] readBounded(InputStream in, int maxBytes) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buf = new byte[8192];
+        int total = 0;
+        int n;
+        while ((n = in.read(buf)) != -1) {
+            total += n;
+            if (total > maxBytes) {
+                throw new BuildDataTooLargeException("PoB build data exceeds maximum allowed size");
+            }
+            out.write(buf, 0, n);
+        }
+        return out.toByteArray();
+    }
+
+    private static class BuildDataTooLargeException extends RuntimeException {
+        BuildDataTooLargeException(String message) {
+            super(message);
+        }
     }
 
     @SuppressWarnings("deprecation")

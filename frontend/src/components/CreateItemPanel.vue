@@ -81,6 +81,28 @@
     <button type="button" class="btn-submit" :disabled="(!itemName && !itemBaseType) || adding" @click="handleAddItem">
       {{ adding ? 'Adding...' : 'Add to Queue' }}
     </button>
+
+    <div class="filter-section import-build-section">
+      <div class="section-label">Import Build</div>
+      <div class="field">
+        <input
+          v-model="buildUrl"
+          type="text"
+          placeholder="Paste pobb.in build URL..."
+          autocomplete="off"
+          @input="importError = ''"
+        />
+      </div>
+      <p v-if="importError" class="error">{{ importError }}</p>
+      <button
+        type="button"
+        class="btn-submit"
+        :disabled="!buildUrl || importing"
+        @click="handleImportBuild"
+      >
+        {{ importing ? 'Importing...' : 'Import' }}
+      </button>
+    </div>
   </div>
 </template>
 
@@ -96,7 +118,7 @@ const props = defineProps({
   stats: { type: Array, default: () => [] },
 })
 
-const emit = defineEmits(['item-added'])
+const emit = defineEmits(['item-added', 'build-imported'])
 
 let nextId = 0
 const newGroup = () => ({ id: nextId++, type: 'and', countMin: null, countMax: null, filters: [] })
@@ -127,6 +149,9 @@ const filterGroups = ref([newGroup()])
 const adding = ref(false)
 const error = ref('')
 const showDropdown = ref(false)
+const buildUrl = ref('')
+const importing = ref(false)
+const importError = ref('')
 
 const suggestions = computed(() => {
   const q = itemName.value.trim().toLowerCase()
@@ -237,6 +262,30 @@ async function handleAddItem() {
     error.value = e.message
   } finally {
     adding.value = false
+  }
+}
+
+async function handleImportBuild() {
+  importError.value = ''
+  importing.value = true
+  try {
+    const res = await fetch(`/api/groups/${props.groupCode}/builds`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: buildUrl.value }),
+    })
+    if (res.ok) {
+      const updated = await res.json()
+      emit('build-imported', updated)
+      buildUrl.value = ''
+    } else {
+      const body = await res.json().catch(() => ({}))
+      importError.value = body.message || 'Import failed.'
+    }
+  } catch (e) {
+    importError.value = 'Import failed. Check your connection and try again.'
+  } finally {
+    importing.value = false
   }
 }
 </script>

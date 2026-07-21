@@ -32,28 +32,82 @@
       </aside>
 
       <main class="column column--queue">
-        <div class="queue-header">
-          <h2>Queue</h2>
+        <div class="view-toggle-group">
+          <button
+            type="button"
+            :class="['view-toggle-btn', { active: activeTab === 'queue' }]"
+            @click="activeTab = 'queue'"
+          >Queue</button>
+          <button
+            type="button"
+            :class="['view-toggle-btn', { active: activeTab === 'builds' }]"
+            @click="activeTab = 'builds'"
+          >Builds ({{ buildQueue.length }})</button>
         </div>
-        <p v-if="queue.length === 0" class="empty">The queue is empty.</p>
-        <div v-else class="queue-list">
-          <div v-for="(item, index) in queue" :key="index" class="queue-row">
-            <span class="position">{{ index + 1 }}</span>
-            <QueueItem
-              :item="item"
-              :canTrade="canTrade"
-              @bought="onBought(index)"
-              @reject="onReject(index)"
-              @buy="onBuy(index)"
-            />
+
+        <template v-if="activeTab === 'queue'">
+          <div class="queue-header">
+            <h2>Queue</h2>
           </div>
-        </div>
+          <p v-if="queue.length === 0" class="empty">The queue is empty.</p>
+          <div v-else class="queue-list">
+            <div v-for="(item, index) in queue" :key="index" class="queue-row">
+              <span class="position">{{ index + 1 }}</span>
+              <QueueItem
+                :item="item"
+                :canTrade="canTrade"
+                @bought="onBought(index)"
+                @reject="onReject(index)"
+                @buy="onBuy(index)"
+              />
+            </div>
+          </div>
+        </template>
+
+        <template v-if="activeTab === 'builds'">
+          <div class="queue-header">
+            <h2>Builds</h2>
+          </div>
+          <p v-if="buildQueue.length === 0" class="empty">No builds imported.</p>
+          <div v-else class="build-list">
+            <div v-for="(build, bi) in buildQueue" :key="bi" class="build-group">
+              <div class="build-group-header">
+                <button
+                  class="build-toggle"
+                  @click="toggleBuildCollapsed(bi)"
+                  :title="isBuildCollapsed(bi) ? 'Expand' : 'Collapse'"
+                >{{ isBuildCollapsed(bi) ? '▶' : '▼' }}</button>
+                <span class="build-name">{{ build.name }}</span>
+                <span class="build-version">{{ build.poeVersion }}</span>
+                <span class="build-count">{{ build.items.length }} item{{ build.items.length === 1 ? '' : 's' }}</span>
+              </div>
+              <div v-if="!isBuildCollapsed(bi)" class="queue-list">
+                <div v-for="(item, ii) in build.items" :key="ii" class="queue-row">
+                  <span class="position">{{ ii + 1 }}</span>
+                  <QueueItem
+                    :item="item"
+                    :canTrade="canTrade"
+                    @bought="onBuildItemRemove(bi, ii)"
+                    @reject="onBuildItemRemove(bi, ii)"
+                    @buy="onBuildBuy(bi, ii)"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
       </main>
 
       <div class="resizer" :class="{ active: resizing }" @mousedown="startResize"></div>
 
       <aside class="column column--create" :style="{ width: panelWidth + 'px' }">
-        <CreateItemPanel :groupCode="group.code" :baseTypes="baseTypes" :stats="stats" @item-added="onItemAdded" />
+        <CreateItemPanel
+          :groupCode="group.code"
+          :baseTypes="baseTypes"
+          :stats="stats"
+          @item-added="onItemAdded"
+          @build-imported="onBuildImported"
+        />
       </aside>
     </div>
   </div>
@@ -69,6 +123,7 @@ const group = history.state.group
 const myScreenName = history.state.screenName
 const queue = ref([...group.itemQueue])
 const members = ref([...group.members])
+const buildQueue = ref([...(group.buildQueue || [])])
 
 const canTrade = computed(() =>
   members.value.some(m => m.screenName === myScreenName && (m.role === 'CREATOR' || m.role === 'TRADER'))
@@ -78,6 +133,18 @@ const isCreator = computed(() =>
 )
 const baseTypes = ref([])
 const stats = ref([])
+
+const activeTab = ref('queue')
+const buildCollapsed = ref({})
+
+function isBuildCollapsed(bi) {
+  // Default collapsed: absent/unset (undefined) counts as collapsed; only an
+  // explicit false (user expanded it) shows the items.
+  return buildCollapsed.value[bi] !== false
+}
+function toggleBuildCollapsed(bi) {
+  buildCollapsed.value[bi] = buildCollapsed.value[bi] === false
+}
 
 const panelWidth = ref(750)
 const resizing = ref(false)
@@ -89,6 +156,7 @@ let mounted = false
 
 const dingSound = new Audio('/sounds/ding.mp3')
 let lastItemCount = queue.value.length
+let lastBuildCount = buildQueue.value.length
 
 function playDing() {
   try {
@@ -135,9 +203,15 @@ async function syncGroup() {
       const live = await res.json()
       const shouldDing = canTrade.value && live.itemQueue.length > lastItemCount
       lastItemCount = live.itemQueue.length
+      const shouldDingBuild = canTrade.value && (live.buildQueue || []).length > lastBuildCount
+      lastBuildCount = (live.buildQueue || []).length
       queue.value = live.itemQueue
       members.value = live.members
+      buildQueue.value = live.buildQueue || []
       if (shouldDing) {
+        playDing()
+      }
+      if (shouldDingBuild) {
         playDing()
       }
     }
@@ -198,6 +272,32 @@ function onItemAdded(items) {
   if (canTrade.value) {
     playDing()
   }
+}
+
+async function onBuildBuy(bi, ii) {
+  const res = await fetch(`/api/groups/${group.code}/builds/${bi}/items/${ii}/buy`, { method: 'POST' })
+  if (res.status === 400) {
+    alert('Set your POESESSID in the sidebar before buying.')
+    return
+  }
+  if (res.ok) {
+    const { tradeUrl } = await res.json()
+    window.open(tradeUrl, '_blank')
+  }
+}
+
+async function onBuildItemRemove(bi, ii) {
+  const res = await fetch(`/api/groups/${group.code}/builds/${bi}/items/${ii}`, { method: 'DELETE' })
+  if (res.ok) {
+    const updated = await res.json()
+    buildQueue.value = updated.buildQueue || []
+  }
+}
+
+function onBuildImported(updatedGroup) {
+  buildQueue.value = updatedGroup.buildQueue || []
+  lastBuildCount = (updatedGroup.buildQueue || []).length
+  playDing()
 }
 
 async function onSetRole({ screenName, role }) {
@@ -347,6 +447,99 @@ h2 {
   font-weight: 700;
   color: #aaa;
   text-align: right;
+}
+
+.view-toggle-group {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  max-width: 320px;
+}
+
+.view-toggle-btn {
+  flex: 1;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  background: #f5f5f5;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.view-toggle-btn:first-child {
+  border-right: 1px solid #ccc;
+}
+
+.view-toggle-btn.active {
+  background: #4a90e2;
+  color: white;
+}
+
+.view-toggle-btn:hover:not(.active) {
+  background: #e8e8e8;
+}
+
+.build-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.build-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.build-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.build-toggle {
+  font-size: 10px;
+  color: #999;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  flex-shrink: 0;
+}
+
+.build-toggle:hover {
+  color: #333;
+}
+
+.build-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  flex: 1;
+}
+
+.build-version {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: #4a90e2;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.04em;
+}
+
+.build-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: #999;
 }
 
 .session-id-section {

@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 public class Web {
 
     private static final OkHttpClient client = new OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
             .readTimeout(10, TimeUnit.SECONDS)
             .build();
 
