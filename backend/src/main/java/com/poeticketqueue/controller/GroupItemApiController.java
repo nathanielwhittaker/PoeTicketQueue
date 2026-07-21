@@ -1,34 +1,43 @@
 package com.poeticketqueue.controller;
 
 import com.poeticketqueue.model.Group;
+import com.poeticketqueue.model.QueuedBuild;
 import com.poeticketqueue.poe.item.Item;
 import com.poeticketqueue.poe.item.Stat;
 import com.poeticketqueue.poe.item.StatGroup;
 import com.poeticketqueue.poe.item.StatGroupType;
+import com.poeticketqueue.service.BuildImportService;
 import com.poeticketqueue.service.GroupMemberService;
 import com.poeticketqueue.service.GroupService;
 import com.poeticketqueue.service.TradeSearchService;
 import com.poeticketqueue.util.SessionAttributes;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 @RestController
 @RequestMapping("/api/groups")
 public class GroupItemApiController {
 
+    private static final Logger log = LoggerFactory.getLogger(GroupItemApiController.class);
+
     private final GroupService groupService;
     private final GroupMemberService groupMemberService;
     private final TradeSearchService tradeSearchService;
+    private final BuildImportService buildImportService;
 
-    public GroupItemApiController(GroupService groupService, GroupMemberService groupMemberService, TradeSearchService tradeSearchService) {
+    public GroupItemApiController(GroupService groupService, GroupMemberService groupMemberService, TradeSearchService tradeSearchService, BuildImportService buildImportService) {
         this.groupService = groupService;
         this.groupMemberService = groupMemberService;
         this.tradeSearchService = tradeSearchService;
+        this.buildImportService = buildImportService;
     }
 
     @GetMapping("/{groupCode}")
@@ -105,6 +114,57 @@ public class GroupItemApiController {
         });
     }
 
+    @PostMapping("/{groupCode}/builds")
+    public ResponseEntity<?> importBuild(@PathVariable String groupCode, @RequestBody ImportBuildRequest request) {
+        Optional<Group> maybeGroup = groupService.findByCode(groupCode);
+        if (maybeGroup.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Group group = maybeGroup.get();
+        BuildImportService.BuildImportOutcome outcome = buildImportService.importBuild(request.url(), group.getPoeVersion());
+        return switch (outcome.status()) {
+            case SUCCESS -> groupService.addBuild(groupCode, outcome.build())
+                    .<ResponseEntity<?>>map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+            case VERSION_MISMATCH -> ResponseEntity.status(409).body(new ImportErrorResponse(outcome.message()));
+            case INVALID_URL -> ResponseEntity.badRequest().body(new ImportErrorResponse(outcome.message()));
+        };
+    }
+
+    @PostMapping("/{groupCode}/builds/{buildIndex}/items/{itemIndex}/buy")
+    public ResponseEntity<BuyResponse> buyBuildItem(@PathVariable String groupCode, @PathVariable int buildIndex, @PathVariable int itemIndex, HttpSession session) {
+        return withTradePermission(groupCode, session, group -> {
+            List<QueuedBuild> builds = group.getBuildQueue();
+            if (buildIndex < 0 || buildIndex >= builds.size()) {
+                return ResponseEntity.badRequest().build();
+            }
+            List<Item> items = builds.get(buildIndex).getItems();
+            if (itemIndex < 0 || itemIndex >= items.size()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            String poeSessionId = (String) session.getAttribute(SessionAttributes.POE_SESSION_ID);
+            if (StringUtils.isBlank(poeSessionId)) {
+                return ResponseEntity.status(400).build();
+            }
+            try {
+                String tradeUrl = tradeSearchService.search(items.get(itemIndex), group.getPoeVersion(), group.getLeague(), poeSessionId);
+                return ResponseEntity.ok(new BuyResponse(tradeUrl));
+            } catch (Exception e) {
+                log.warn("buyBuildItem() -- trade search failed for group {}", groupCode, e);
+                return ResponseEntity.status(502).build();
+            }
+        });
+    }
+
+    @DeleteMapping("/{groupCode}/builds/{buildIndex}/items/{itemIndex}")
+    public ResponseEntity<Group> removeBuildItem(@PathVariable String groupCode, @PathVariable int buildIndex, @PathVariable int itemIndex, HttpSession session) {
+        return withTradePermission(groupCode, session, group -> {
+            groupService.removeBuildItem(groupCode, buildIndex, itemIndex);
+            return ResponseEntity.ok(group);
+        });
+    }
+
     private <T> ResponseEntity<T> withTradePermission(String groupCode, HttpSession session, Function<Group, ResponseEntity<T>> action) {
         String screenName = (String) session.getAttribute(SessionAttributes.SCREEN_NAME);
         if (screenName == null) {
@@ -129,4 +189,6 @@ public class GroupItemApiController {
     record FilterGroupRequest(StatGroupType type, Integer countMin, Integer countMax, List<StatFilterRequest> filters) {}
     record StatFilterRequest(String statId, String text, Double min, Double max) {}
     record BuyResponse(String tradeUrl) {}
+    record ImportBuildRequest(String url) {}
+    record ImportErrorResponse(String message) {}
 }

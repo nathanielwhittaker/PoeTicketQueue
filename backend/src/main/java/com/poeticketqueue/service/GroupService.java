@@ -3,6 +3,7 @@ package com.poeticketqueue.service;
 import com.poeticketqueue.model.Group;
 import com.poeticketqueue.model.GroupRole;
 import com.poeticketqueue.model.Member;
+import com.poeticketqueue.model.QueuedBuild;
 import com.poeticketqueue.poe.build.PoeVersion;
 import com.poeticketqueue.poe.item.Item;
 import com.poeticketqueue.util.GroupCodeGenerator;
@@ -88,6 +89,39 @@ public class GroupService {
             List<Item> queue = group.getItemQueue();
             if (index >= 0 && index < queue.size()) {
                 queue.remove(index);
+            }
+            return group;
+        });
+    }
+
+    public Optional<Group> addBuild(String groupCode, QueuedBuild build) {
+        return findByCode(groupCode).map(group -> {
+            group.getBuildQueue().add(build);
+            return group;
+        });
+    }
+
+    public Optional<Group> removeBuildItem(String groupCode, int buildIndex, int itemIndex) {
+        return findByCode(groupCode).map(group -> {
+            List<QueuedBuild> builds = group.getBuildQueue();
+            if (buildIndex >= 0 && buildIndex < builds.size()) {
+                List<Item> items = builds.get(buildIndex).getItems();
+                if (itemIndex >= 0 && itemIndex < items.size()) {
+                    items.remove(itemIndex);
+                    if (items.isEmpty()) {
+                        builds.remove(buildIndex);
+                    }
+                }
+            }
+            return group;
+        });
+    }
+
+    public Optional<Group> removeBuild(String groupCode, int buildIndex) {
+        return findByCode(groupCode).map(group -> {
+            List<QueuedBuild> builds = group.getBuildQueue();
+            if (buildIndex >= 0 && buildIndex < builds.size()) {
+                builds.remove(buildIndex);
             }
             return group;
         });

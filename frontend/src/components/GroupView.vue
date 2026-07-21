@@ -48,12 +48,44 @@
             />
           </div>
         </div>
+
+        <div class="queue-header builds-header">
+          <h2>Builds</h2>
+        </div>
+        <p v-if="buildQueue.length === 0" class="empty">No builds imported.</p>
+        <div v-else class="build-list">
+          <div v-for="(build, bi) in buildQueue" :key="bi" class="build-group">
+            <div class="build-group-header">
+              <span class="build-name">{{ build.name }}</span>
+              <span class="build-version">{{ build.poeVersion }}</span>
+              <span class="build-count">{{ build.items.length }} item{{ build.items.length === 1 ? '' : 's' }}</span>
+            </div>
+            <div class="queue-list">
+              <div v-for="(item, ii) in build.items" :key="ii" class="queue-row">
+                <span class="position">{{ ii + 1 }}</span>
+                <QueueItem
+                  :item="item"
+                  :canTrade="canTrade"
+                  @bought="onBuildItemRemove(bi, ii)"
+                  @reject="onBuildItemRemove(bi, ii)"
+                  @buy="onBuildBuy(bi, ii)"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
 
       <div class="resizer" :class="{ active: resizing }" @mousedown="startResize"></div>
 
       <aside class="column column--create" :style="{ width: panelWidth + 'px' }">
-        <CreateItemPanel :groupCode="group.code" :baseTypes="baseTypes" :stats="stats" @item-added="onItemAdded" />
+        <CreateItemPanel
+          :groupCode="group.code"
+          :baseTypes="baseTypes"
+          :stats="stats"
+          @item-added="onItemAdded"
+          @build-imported="onBuildImported"
+        />
       </aside>
     </div>
   </div>
@@ -69,6 +101,7 @@ const group = history.state.group
 const myScreenName = history.state.screenName
 const queue = ref([...group.itemQueue])
 const members = ref([...group.members])
+const buildQueue = ref([...(group.buildQueue || [])])
 
 const canTrade = computed(() =>
   members.value.some(m => m.screenName === myScreenName && (m.role === 'CREATOR' || m.role === 'TRADER'))
@@ -137,6 +170,7 @@ async function syncGroup() {
       lastItemCount = live.itemQueue.length
       queue.value = live.itemQueue
       members.value = live.members
+      buildQueue.value = live.buildQueue || []
       if (shouldDing) {
         playDing()
       }
@@ -198,6 +232,31 @@ function onItemAdded(items) {
   if (canTrade.value) {
     playDing()
   }
+}
+
+async function onBuildBuy(bi, ii) {
+  const res = await fetch(`/api/groups/${group.code}/builds/${bi}/items/${ii}/buy`, { method: 'POST' })
+  if (res.status === 400) {
+    alert('Set your POESESSID in the sidebar before buying.')
+    return
+  }
+  if (res.ok) {
+    const { tradeUrl } = await res.json()
+    window.open(tradeUrl, '_blank')
+  }
+}
+
+async function onBuildItemRemove(bi, ii) {
+  const res = await fetch(`/api/groups/${group.code}/builds/${bi}/items/${ii}`, { method: 'DELETE' })
+  if (res.ok) {
+    const updated = await res.json()
+    buildQueue.value = updated.buildQueue || []
+  }
+}
+
+function onBuildImported(updatedGroup) {
+  buildQueue.value = updatedGroup.buildQueue || []
+  playDing()
 }
 
 async function onSetRole({ screenName, role }) {
@@ -347,6 +406,54 @@ h2 {
   font-weight: 700;
   color: #aaa;
   text-align: right;
+}
+
+.builds-header {
+  margin-top: 24px;
+}
+
+.build-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.build-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.build-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.build-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  flex: 1;
+}
+
+.build-version {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: #4a90e2;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.04em;
+}
+
+.build-count {
+  font-size: 12px;
+  font-weight: 600;
+  color: #999;
 }
 
 .session-id-section {
