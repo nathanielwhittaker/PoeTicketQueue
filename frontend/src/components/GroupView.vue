@@ -88,7 +88,7 @@
                     :item="item"
                     :canTrade="canTrade"
                     @bought="onBuildItemRemove(bi, ii)"
-                    @reject="onBuildItemRemove(bi, ii)"
+                    @reject="onBuildItemReject(bi, ii)"
                     @buy="onBuildBuy(bi, ii)"
                   />
                 </div>
@@ -155,6 +155,7 @@ let pollTimer = null
 let mounted = false
 
 const dingSound = new Audio('/sounds/ding.mp3')
+const boomSound = new Audio('/sounds/vine-boom.mp3')
 let lastItemCount = queue.value.length
 let lastBuildCount = buildQueue.value.length
 
@@ -162,6 +163,13 @@ function playDing() {
   try {
     dingSound.currentTime = 0
     dingSound.play().catch(() => {})
+  } catch (e) {}
+}
+
+function playBoom() {
+  try {
+    boomSound.currentTime = 0
+    boomSound.play().catch(() => {})
   } catch (e) {}
 }
 
@@ -254,7 +262,10 @@ async function removeItem(index) {
 }
 
 function onBought(index) { removeItem(index) }
-function onReject(index) { removeItem(index) }
+function onReject(index) {
+  playBoom()
+  removeItem(index)
+}
 async function onBuy(index) {
   const res = await fetch(`/api/groups/${group.code}/items/${index}/buy`, { method: 'POST' })
   if (res.status === 400) {
@@ -292,6 +303,11 @@ async function onBuildItemRemove(bi, ii) {
     const updated = await res.json()
     buildQueue.value = updated.buildQueue || []
   }
+}
+
+function onBuildItemReject(bi, ii) {
+  playBoom()
+  onBuildItemRemove(bi, ii)
 }
 
 function onBuildImported(updatedGroup) {
