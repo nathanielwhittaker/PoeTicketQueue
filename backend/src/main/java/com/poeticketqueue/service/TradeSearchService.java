@@ -106,7 +106,7 @@ public class TradeSearchService {
                 .status(PathOfExileTradeApi.sellerStatusType)
                 .baseType(item.baseType)
                 .name(unique ? item.name : null)
-                .category(item.baseType != null ? CATEGORY_MAP.get(item.baseType) : null)
+                .category(item.category != null ? CATEGORY_MAP.get(item.category) : null)
                 .sortPriceAsc();
 
 
