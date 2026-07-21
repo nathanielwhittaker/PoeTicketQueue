@@ -2,6 +2,8 @@ package com.poeticketqueue.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.poeticketqueue.poe.api.PathOfExileTradeApi;
+import com.poeticketqueue.poe.build.PoeVersion;
 import com.poeticketqueue.poe.item.Item;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +18,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * <p>The service has no other collaborators besides an {@link ObjectMapper}, so it is exercised
  * directly with {@code new TradeSearchService(new ObjectMapper())} — no Spring context, no mocking.
+ *
+ * <p>Some tests also exercise the version-aware {@code buildQuery(Item, PathOfExileTradeApi, String)}
+ * overload and the import-path {@link PathOfExileTradeApi#buildJsonForPost(Item, String)} to assert
+ * the PoE1/PoE2 filter-section-remap behavior (e.g. PoE2 remapping WEAPON_FILTERS and ARMOUR_FILTERS
+ * into EQUIPMENT_FILTERS).
  */
 class TradeSearchServiceTest {
 
@@ -54,5 +61,42 @@ class TradeSearchServiceTest {
         JsonNode query = objectMapper.readTree(json).path("query");
         assertThat(query.path("name").asText()).isEqualTo("Kaom's Heart");
         assertThat(query.path("type").asText()).isEqualTo("Glorious Plate");
+    }
+
+    @Test
+    void poe2Item_armourFilterLandsUnderEquipmentFilters() throws Exception {
+        Item item = new Item("Astral Plate", "RARE", "Astral Plate", "Astral Plate", new java.util.ArrayList<>(),
+                -1, -1, 100, -1, -1, -1, -1, null, -1, -1);
+
+        String json = service.buildQuery(item, PoeVersion.POE2.getTradeApi(), "Standard");
+
+        JsonNode filters = objectMapper.readTree(json).path("query").path("filters");
+        assertThat(filters.path("equipment_filters").path("filters").has("ar")).isTrue();
+        assertThat(filters.has("armour_filters")).isFalse();
+    }
+
+    @Test
+    void poe1Item_armourFilterStaysUnderArmourFilters() throws Exception {
+        Item item = new Item("Astral Plate", "RARE", "Astral Plate", "Astral Plate", new java.util.ArrayList<>(),
+                -1, -1, 100, -1, -1, -1, -1, null, -1, -1);
+
+        String json = service.buildQuery(item, PoeVersion.POE1.getTradeApi(), "Standard");
+
+        JsonNode filters = objectMapper.readTree(json).path("query").path("filters");
+        assertThat(filters.path("armour_filters").path("filters").has("ar")).isTrue();
+        assertThat(filters.has("equipment_filters")).isFalse();
+    }
+
+    @Test
+    void poe2Item_weaponFilterLandsUnderEquipmentFilters() throws Exception {
+        PathOfExileTradeApi api = PoeVersion.POE2.getTradeApi();
+        Item item = new Item("Vaal Axe", "RARE", "Vaal Axe", "Vaal Axe", new java.util.ArrayList<>(),
+                -1, -1, -1, -1, 200, -1, -1, null, -1, -1); // pdps = 200 (constructor slot 10)
+
+        String json = api.buildJsonForPost(item, (String) null);
+
+        JsonNode filters = objectMapper.readTree(json).path("query").path("filters");
+        assertThat(filters.path("equipment_filters").path("filters").has("pdps")).isTrue();
+        assertThat(filters.has("weapon_filters")).isFalse();
     }
 }
