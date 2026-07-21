@@ -96,11 +96,12 @@ public class TradeSearchService {
         return poeVersion.getTradeApi().getTradeWebUrl() + encodedLeague + "/" + idNode.asText();
     }
 
-    private String buildQuery(Item item, String league) {
+    String buildQuery(Item item, String league) {
+        boolean unique = "UNIQUE".equalsIgnoreCase(item.rarity);
         PoETradeQuery query = new PoETradeQuery(league)
                 .status(PathOfExileTradeApi.sellerStatusType)
                 .baseType(item.baseType)
-                .name(item.name)
+                .name(unique ? item.name : null)
                 .category(item.baseType != null ? CATEGORY_MAP.get(item.baseType) : null)
                 .sortPriceAsc();
 
