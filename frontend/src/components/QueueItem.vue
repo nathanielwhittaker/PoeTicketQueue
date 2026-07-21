@@ -4,7 +4,7 @@
       <button class="toggle" @click="expanded = !expanded" :title="expanded ? 'Collapse' : 'Expand'">
         {{ expanded ? '▲' : '▼' }}
       </button>
-      <span class="item-name">{{ item.name || item.baseType || 'Item' }}</span>
+      <span class="item-name">{{ displayName }}</span>
       <span v-if="item.queuedBy" class="queued-by">{{ item.queuedBy }}</span>
       <div v-if="canTrade" class="actions">
         <button class="action bought" @click="$emit('bought', item)" title="Mark as bought">✓</button>
@@ -105,6 +105,14 @@ const weaponDps = computed(() => {
   if (e > 0) { chips.push({ label: 'eDPS', value: e }) }
   chips.push({ label: 'Total DPS', value: p + e })
   return chips
+})
+
+const displayName = computed(() => {
+  if ((props.item.rarity || '').toUpperCase() === 'UNIQUE') { return props.item.name }
+  else if (props.item.name) { return props.item.name }
+  else if (props.item.baseType) { return props.item.baseType }
+  else if (props.item.category) { return props.item.category }
+  else { return 'Item' }
 })
 
 const rarityClass = computed(() => {
