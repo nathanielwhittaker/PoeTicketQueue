@@ -57,6 +57,23 @@
       </div>
 
       <div class="filter-section">
+        <div class="section-label" @click="weaponFiltersCollapsed = !weaponFiltersCollapsed">
+          <span class="chevron">{{ weaponFiltersCollapsed ? '▶' : '▼' }}</span>
+          Weapon Filters
+        </div>
+        <template v-if="!weaponFiltersCollapsed">
+          <div class="armour-grid">
+            <ArmourFilter
+              v-for="f in weaponFilterFields"
+              :key="f.key"
+              :label="f.label"
+              v-model="weaponFilters[f.key]"
+            />
+          </div>
+        </template>
+      </div>
+
+      <div class="filter-section">
         <div class="section-label" @click="statFiltersCollapsed = !statFiltersCollapsed">
           <span class="chevron">{{ statFiltersCollapsed ? '▶' : '▼' }}</span>
           Stat Filters
@@ -146,6 +163,22 @@ const emptyArmourFilters = () => ({
   block:          { min: null, max: null },
 })
 const armourFilters = ref(emptyArmourFilters())
+const weaponFiltersCollapsed = ref(false)
+const weaponFilterFields = [
+  { key: 'damage', label: 'Hit Damage' },
+  { key: 'crit',   label: 'Crit Chance' },
+  { key: 'pdps',   label: 'Physical DPS' },
+  { key: 'edps',   label: 'Elemental DPS' },
+  { key: 'aps',    label: 'Attacks Per Second' },
+]
+const emptyWeaponFilters = () => ({
+  damage: { min: null, max: null },
+  crit:   { min: null, max: null },
+  pdps:   { min: null, max: null },
+  edps:   { min: null, max: null },
+  aps:    { min: null, max: null },
+})
+const weaponFilters = ref(emptyWeaponFilters())
 const itemName = ref('')
 const itemRarity = ref(null)
 const itemBaseType = ref(null)
@@ -253,6 +286,10 @@ async function handleAddItem() {
           Object.entries(armourFilters.value)
             .filter(([, v]) => v.min !== null || v.max !== null)
         ),
+        weaponFilters: Object.fromEntries(
+          Object.entries(weaponFilters.value)
+            .filter(([, v]) => v.min !== null || v.max !== null)
+        ),
       }),
     })
     if (!response.ok) throw new Error('Failed to add item')
@@ -263,6 +300,7 @@ async function handleAddItem() {
     itemBaseType.value = null
     filterGroups.value = [newGroup()]
     armourFilters.value = emptyArmourFilters()
+    weaponFilters.value = emptyWeaponFilters()
   } catch (e) {
     error.value = e.message
   } finally {

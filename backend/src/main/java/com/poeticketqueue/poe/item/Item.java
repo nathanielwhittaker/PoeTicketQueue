@@ -46,6 +46,13 @@ public class Item implements Serializable {
     public int maxBasePercentile;
     public int edps;
     public int pdps;
+    public int maxEdps;
+    public int maxPdps;
+    public int maxLocalCrit;
+    public int aps;
+    public int maxAps;
+    public int damage;
+    public int maxDamage;
     public int links;
     public int ilvl;
     public Boolean corrupted;
@@ -131,6 +138,13 @@ public class Item implements Serializable {
     public int getMaxWard()             { return maxWard; }
     public int getMaxBlock()            { return maxBlock; }
     public int getMaxBasePercentile()   { return maxBasePercentile; }
+    public int getMaxPDPS()             { return maxPdps; }
+    public int getMaxEDPS()             { return maxEdps; }
+    public int getMaxLocalCrit()        { return maxLocalCrit; }
+    public int getAPS()                 { return aps; }
+    public int getMaxAPS()              { return maxAps; }
+    public int getDamage()              { return damage; }
+    public int getMaxDamage()           { return maxDamage; }
 
     public static Item fromStringForBuild(String item, Build build) {
         String[] statLines = item.split("\n");
