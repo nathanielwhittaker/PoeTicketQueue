@@ -104,8 +104,12 @@ public abstract class PathOfExileTradeApi {
         return buildJsonForPost(item, category);
     }
 
+    public PoETradeQuery newQuery(String league) {
+        return new PoETradeQuery(league).sectionRemap(getFilterSectionRemaps());
+    }
+
     public String buildJsonForPost(Item item, String category) {
-        PoETradeQuery query = new PoETradeQuery(getLeague());
+        PoETradeQuery query = newQuery(getLeague());
         if (StringUtils.isNotBlank(item.getName()) && "UNIQUE".equalsIgnoreCase(item.getRarity())) {
             query.name(item.getName());
         }
@@ -127,7 +131,6 @@ public abstract class PathOfExileTradeApi {
         query.stats(item.getStats())
                 .status(sellerStatusType)
                 .sortPriceAsc()
-                .sectionRemap(getFilterSectionRemaps())
                 .filterAll(filters);
 
         return query.toJson();

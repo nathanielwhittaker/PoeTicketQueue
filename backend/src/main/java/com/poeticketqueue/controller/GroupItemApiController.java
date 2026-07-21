@@ -116,7 +116,7 @@ public class GroupItemApiController {
                 String tradeUrl = tradeSearchService.search(queue.get(index), group.getPoeVersion(), group.getLeague(), poeSessionId);
                 return ResponseEntity.ok(new BuyResponse(tradeUrl));
             } catch (Exception e) {
-                System.out.println(e.getStackTrace());
+                log.warn("buyItem() -- trade search failed for group {}", groupCode, e);
                 return ResponseEntity.status(502).build();
             }
         });

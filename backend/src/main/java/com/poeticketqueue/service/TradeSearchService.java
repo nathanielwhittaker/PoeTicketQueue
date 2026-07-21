@@ -70,7 +70,7 @@ public class TradeSearchService {
 
     public String search(Item item, PoeVersion poeVersion, String league, String poeSessionId) throws Exception {
         String encodedLeague = league.replace(" ", "%20");
-        String body = buildQuery(item, league);
+        String body = buildQuery(item, poeVersion.getTradeApi(), league);
 
         log.debug("Trade search POST body: {}", body);
 
@@ -97,8 +97,12 @@ public class TradeSearchService {
     }
 
     String buildQuery(Item item, String league) {
+        return buildQuery(item, PoeVersion.POE1.getTradeApi(), league);
+    }
+
+    String buildQuery(Item item, PathOfExileTradeApi tradeApi, String league) {
         boolean unique = "UNIQUE".equalsIgnoreCase(item.rarity);
-        PoETradeQuery query = new PoETradeQuery(league)
+        PoETradeQuery query = tradeApi.newQuery(league)
                 .status(PathOfExileTradeApi.sellerStatusType)
                 .baseType(item.baseType)
                 .name(unique ? item.name : null)
