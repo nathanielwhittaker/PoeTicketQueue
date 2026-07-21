@@ -95,6 +95,10 @@ class TradeSearchServiceTest {
         String json = service.buildQuery(item, "Standard");
 
         JsonNode filters = objectMapper.readTree(json).path("query").path("filters");
+        assertThat(filters.has("weapon_filters")).isFalse();
+    }
+
+    @Test
     void poe2Item_armourFilterLandsUnderEquipmentFilters() throws Exception {
         Item item = new Item("Astral Plate", "RARE", "Astral Plate", "Astral Plate", new java.util.ArrayList<>(),
                 -1, -1, 100, -1, -1, -1, -1, null, -1, -1);
