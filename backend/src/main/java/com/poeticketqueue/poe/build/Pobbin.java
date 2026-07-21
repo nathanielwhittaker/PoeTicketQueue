@@ -1,7 +1,7 @@
 package com.poeticketqueue.poe.build;
 
+import com.poeticketqueue.poe.importer.PobbinImportFetcher;
 import com.poeticketqueue.poe.item.Item;
-import com.poeticketqueue.poe.util.Web;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ public abstract class Pobbin extends Build {
         this.url = url;
         this.name = name;
         log.info("Loading build '{}' from {}", name, url);
-        this.html = new Web(url).getResponse();
+        this.html = PobbinImportFetcher.fetch(url);
         parsePobbinPobXml();
         parsePobXmlIntoBuildData();
         parseBuildDataIntoItemData();
