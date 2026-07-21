@@ -121,7 +121,7 @@ public class GroupItemApiController {
             return ResponseEntity.notFound().build();
         }
         Group group = maybeGroup.get();
-        BuildImportService.BuildImportOutcome outcome = buildImportService.importBuild(request.url(), group.getPoeVersion());
+        BuildImportService.BuildImportOutcome outcome = buildImportService.importBuild(request.url(), group.getPoeVersion(), request.useTrueValues());
         return switch (outcome.status()) {
             case SUCCESS -> groupService.addBuild(groupCode, outcome.build())
                     .<ResponseEntity<?>>map(ResponseEntity::ok)
@@ -189,6 +189,6 @@ public class GroupItemApiController {
     record FilterGroupRequest(StatGroupType type, Integer countMin, Integer countMax, List<StatFilterRequest> filters) {}
     record StatFilterRequest(String statId, String text, Double min, Double max) {}
     record BuyResponse(String tradeUrl) {}
-    record ImportBuildRequest(String url) {}
+    record ImportBuildRequest(String url, boolean useTrueValues) {}
     record ImportErrorResponse(String message) {}
 }

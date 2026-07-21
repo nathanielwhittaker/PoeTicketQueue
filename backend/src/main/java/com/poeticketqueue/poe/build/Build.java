@@ -12,17 +12,20 @@ public abstract class Build implements PoeGameVersionConfig {
     public List<Stat> allPossibleStats;
     public List<Item> allPossibleBaseTypesWithLocalMods;
     protected List<Item> items;
+    protected boolean useTrueValues;
 
     protected Build() {
         this.allPossibleStats = getTradeStats();
         this.allPossibleBaseTypesWithLocalMods = getTradeBaseTypesWithLocalMods();
     }
 
-    public static Build of(BuildType type, BuildImporterResult importResult) {
-        return type.create(importResult);
+    public static Build of(BuildType type, BuildImporterResult importResult, boolean useTrueValues) {
+        return type.create(importResult, useTrueValues);
     }
 
     public abstract String getName();
+
+    public boolean isUseTrueValues() { return useTrueValues; }
 
     public List<Item> getItems() { return items; }
 

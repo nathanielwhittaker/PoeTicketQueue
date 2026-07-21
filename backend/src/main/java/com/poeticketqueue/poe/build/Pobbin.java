@@ -30,7 +30,8 @@ public abstract class Pobbin extends Build {
     private String buildData;
     private List<String> itemDataList;
 
-    protected Pobbin(String url, String name) {
+    protected Pobbin(String url, String name, boolean useTrueValues) {
+        this.useTrueValues = useTrueValues;
         this.url = url;
         this.name = name;
         log.info("Loading build '{}' from {}", name, url);
