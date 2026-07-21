@@ -150,7 +150,7 @@ label {
 
 .optional {
   font-weight: 400;
-  color: #999;
+  color: var(--color-text-optional);
   font-size: 12px;
 }
 
@@ -158,27 +158,28 @@ input,
 select {
   padding: 10px 12px;
   font-size: 16px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   outline: none;
   transition: border-color 0.15s;
-  background: #fff;
+  background: var(--color-surface);
+  color: var(--color-text);
   width: 100%;
   box-sizing: border-box;
 }
 
 input:focus,
 select:focus {
-  border-color: #4a90e2;
+  border-color: var(--color-accent);
 }
 
 select:disabled {
-  background: #f5f5f5;
-  color: #aaa;
+  background: var(--color-surface-alt);
+  color: var(--color-text-faint);
 }
 
 .error {
-  color: #d9534f;
+  color: var(--color-danger);
   font-size: 14px;
   margin: 0;
 }
@@ -187,8 +188,8 @@ button {
   padding: 12px;
   font-size: 16px;
   font-weight: 600;
-  color: white;
-  background-color: #4a90e2;
+  color: var(--color-accent-contrast);
+  background-color: var(--color-accent);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -196,17 +197,17 @@ button {
 }
 
 button:hover:not(:disabled) {
-  background-color: #357abd;
+  background-color: var(--color-accent-hover);
 }
 
 button:disabled {
-  background-color: #a0bde0;
+  background-color: var(--color-accent-disabled);
   cursor: not-allowed;
 }
 
 .toggle-group {
   display: flex;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -216,8 +217,8 @@ button:disabled {
   padding: 10px;
   font-size: 14px;
   font-weight: 600;
-  color: #555;
-  background: #f5f5f5;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-alt);
   border: none;
   border-radius: 0;
   cursor: pointer;
@@ -225,15 +226,15 @@ button:disabled {
 }
 
 .toggle-btn:first-child {
-  border-right: 1px solid #ccc;
+  border-right: 1px solid var(--color-border);
 }
 
 .toggle-btn.active {
-  background: #4a90e2;
-  color: white;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
 }
 
 .toggle-btn:hover:not(.active) {
-  background: #e8e8e8;
+  background: var(--color-hover-surface);
 }
 </style>

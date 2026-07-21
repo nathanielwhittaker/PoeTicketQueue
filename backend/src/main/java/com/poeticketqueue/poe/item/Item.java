@@ -61,7 +61,7 @@ public class Item implements Serializable {
             "armour:",        (i, v) -> i.armour = v
     );
 
-    private record ParsedStat(String stat, String searchKey, double numericRoll) {}
+    private record ParsedStat(String stat, String displayText, String searchKey, double numericRoll) {}
     private record StatResolution(String id, double roll) {}
 
     // For deserialization only
@@ -200,7 +200,7 @@ public class Item implements Serializable {
             if (skipLines.contains(i)) continue;
             if (applyStructuredField(statLines[i], finalItem)) continue;
 
-            ParsedStat ps = parseStat(statLines[i]);
+            ParsedStat ps = parseStat(statLines[i], build.isUseTrueValues());
 
             if (isWeapon && Stat.weaponDpsStatNames.contains(ps.stat().toLowerCase().trim())) {
                 weaponDmg.merge(ps.stat().toLowerCase().trim(), ps.numericRoll(), Double::sum);
@@ -217,7 +217,7 @@ public class Item implements Serializable {
             } else {
                 StatResolution resolution = resolveStatId(ps.searchKey(), ps.numericRoll(), i, statLines, skipLines, build);
                 if (resolution.id() == null) log.warn("No trade stat ID found for '{}' on item '{}'", ps.searchKey(), name);
-                allStatsOnThisItem.add(new Stat(ps.stat(), resolution.id(), resolution.roll()));
+                allStatsOnThisItem.add(new Stat(ps.displayText(), resolution.id(), resolution.roll()));
             }
         }
 
@@ -272,13 +272,20 @@ public class Item implements Serializable {
         return false;
     }
 
-    private static ParsedStat parseStat(String rawLine) {
+    private static ParsedStat parseStat(String rawLine, boolean useTrueValues) {
         String line = rawLine;
-        if (line.toLowerCase().startsWith("adds ")) line = line.substring("adds ".length()).trim();
+        String addsPrefix = line.toLowerCase().startsWith("adds ") ? "Adds " : "";
+        if (!addsPrefix.isEmpty()) {
+            line = line.substring("adds ".length()).trim();
+        }
 
+        String rangeDisplay = null;
         Pattern flatDmgPattern = Pattern.compile("([+-]?\\d+(?:\\.\\d+)?)\\s*to\\s*([+-]?\\d+(?:\\.\\d+)?)", Pattern.CASE_INSENSITIVE);
         Matcher flatMatcher = flatDmgPattern.matcher(line);
         if (flatMatcher.find()) {
+            String before = line.substring(0, flatMatcher.start()).trim();
+            String after = line.substring(flatMatcher.end()).trim();
+            rangeDisplay = addsPrefix + (before.isEmpty() ? "" : before + " ") + flatMatcher.group(1) + "–" + flatMatcher.group(2) + " " + after;
             double n1 = Double.parseDouble(flatMatcher.group(1));
             double n2 = Double.parseDouble(flatMatcher.group(2));
             line = Math.round((n1 + n2) / 2.0) + line.substring(flatMatcher.end()).trim();
@@ -287,6 +294,7 @@ public class Item implements Serializable {
         Pattern pattern = Pattern.compile("[+-]?\\d+(\\.\\d+)?%?\\s?");
         Matcher matcher = pattern.matcher(line);
         String stat = line;
+        String displayText = line;
         String searchKey = line.toLowerCase().trim();
         double numericRoll = -1;
         if (matcher.find()) {
@@ -300,10 +308,15 @@ public class Item implements Serializable {
             searchKey = ((prefix.isEmpty() ? "" : prefix + " ")
                     + (hasSign ? matched.charAt(0) : "") + "#" + (hasPercent ? "%" : "")
                     + (suffix.isEmpty() ? "" : " " + suffix)).toLowerCase().trim();
+            String placeholder = (hasSign ? String.valueOf(matched.charAt(0)) : "") + "#" + (hasPercent ? "%" : "");
+            displayText = addsPrefix + (prefix.isEmpty() ? "" : prefix + " ") + placeholder + (suffix.isEmpty() ? "" : " " + suffix);
             boolean excluded = PropertiesManagerCore.getRollDeltaExclusions().stream().anyMatch(searchKey::contains);
-            numericRoll = excluded ? (int) rawRoll : (int)(rawRoll * PropertiesManagerCore.getStatRollDelta());
+            numericRoll = (excluded || useTrueValues) ? (int) rawRoll : (int)(rawRoll * PropertiesManagerCore.getStatRollDelta());
         }
-        return new ParsedStat(stat, searchKey, numericRoll);
+        if (rangeDisplay != null) {
+            displayText = rangeDisplay;
+        }
+        return new ParsedStat(stat, displayText, searchKey, numericRoll);
     }
 
     private static Stat resolveImplicitStat(ParsedStat ps, Build build) {
@@ -313,19 +326,19 @@ public class Item implements Serializable {
         if (implicitId != null) ids.add(implicitId);
         if (enchantId != null && !ids.contains(enchantId)) ids.add(enchantId);
         String primaryId = ids.isEmpty() ? build.getIdFromStatText(ps.searchKey()) : ids.get(0);
-        Stat newStat = new Stat(ps.stat(), primaryId, ps.numericRoll());
+        Stat newStat = new Stat(ps.displayText(), primaryId, ps.numericRoll());
         if (ids.size() >= 2) newStat.setAlternateId(ids.get(1));
         return newStat;
     }
 
     private static StatResolution resolveStatId(String searchKey, double numericRoll, int lineIdx, String[] lines, Set<Integer> skipLines, Build build) {
         if (lineIdx + 2 < lines.length && !skipLines.contains(lineIdx + 1) && !skipLines.contains(lineIdx + 2)) {
-            String threeLineKey = searchKey + "\n" + normalizeLineToSearchKey(lines[lineIdx + 1]) + "\n" + normalizeLineToSearchKey(lines[lineIdx + 2]);
+            String threeLineKey = searchKey + "\n" + normalizeLineToSearchKey(lines[lineIdx + 1], build.isUseTrueValues()) + "\n" + normalizeLineToSearchKey(lines[lineIdx + 2], build.isUseTrueValues());
             String threeLineId = build.getIdFromStatText(threeLineKey);
             if (threeLineId != null) { skipLines.add(lineIdx + 1); skipLines.add(lineIdx + 2); return new StatResolution(threeLineId, numericRoll); }
         }
         if (lineIdx + 1 < lines.length && !skipLines.contains(lineIdx + 1)) {
-            String twoLineKey = searchKey + "\n" + normalizeLineToSearchKey(lines[lineIdx + 1]);
+            String twoLineKey = searchKey + "\n" + normalizeLineToSearchKey(lines[lineIdx + 1], build.isUseTrueValues());
             String twoLineId = build.getIdFromStatText(twoLineKey);
             if (twoLineId != null) { skipLines.add(lineIdx + 1); return new StatResolution(twoLineId, numericRoll); }
         }
@@ -370,8 +383,8 @@ public class Item implements Serializable {
         item.edps = (int) Math.floor((fireDmg + coldDmg + lightDmg) * finalAps);
     }
 
-    private static String normalizeLineToSearchKey(String rawLine) {
-        return parseStat(rawLine).searchKey();
+    private static String normalizeLineToSearchKey(String rawLine, boolean useTrueValues) {
+        return parseStat(rawLine, useTrueValues).searchKey();
     }
 
     @Override

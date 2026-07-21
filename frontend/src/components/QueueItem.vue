@@ -19,6 +19,12 @@
           <span class="defense-value">{{ d.max ? `${d.min}–${d.max}` : d.min }}</span>
         </span>
       </div>
+      <div v-if="weaponDps.length > 0" class="defenses">
+        <span v-for="d in weaponDps" :key="d.label" class="defense-chip">
+          <span class="defense-label">{{ d.label }}</span>
+          <span class="defense-value">{{ d.value }}</span>
+        </span>
+      </div>
       <template v-if="item.statGroups && item.statGroups.length > 0">
         <div v-for="(group, gi) in item.statGroups" :key="gi" class="stat-group">
           <div v-if="groupLabel(group)" class="group-label">{{ groupLabel(group) }}</div>
@@ -90,6 +96,17 @@ const defenses = computed(() =>
     .map(f => ({ label: f.label, min: props.item[f.key], max: props.item[f.maxKey] > 0 ? props.item[f.maxKey] : null }))
 )
 
+const weaponDps = computed(() => {
+  const p = props.item.pdps || 0
+  const e = props.item.edps || 0
+  if (p <= 0 && e <= 0) { return [] }
+  const chips = []
+  if (p > 0) { chips.push({ label: 'pDPS', value: p }) }
+  if (e > 0) { chips.push({ label: 'eDPS', value: e }) }
+  chips.push({ label: 'Total DPS', value: p + e })
+  return chips
+})
+
 const rarityClass = computed(() => {
   switch ((props.item.rarity || '').toUpperCase()) {
     case 'UNIQUE':    return 'rarity-unique'
@@ -104,7 +121,7 @@ const rarityClass = computed(() => {
 
 <style scoped>
 .item {
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-strong);
   border-radius: 8px;
   overflow: hidden;
   width: 100%;
@@ -118,11 +135,12 @@ const rarityClass = computed(() => {
 }
 
 .rarity-none {
-  background: #fff;
+  background: var(--color-surface);
 }
-.rarity-none .item-name { color: #222; }
-.rarity-none .toggle { color: #aaa; }
-.rarity-none .toggle:hover { color: #555; }
+.rarity-none .item-name { color: var(--color-text); }
+.rarity-none .toggle { color: var(--color-text-faint); }
+.rarity-none .toggle:hover { color: var(--color-text-secondary); }
+.rarity-none .queued-by { color: var(--color-text-faint); }
 
 .rarity-normal {
   background: #2b2b2b;
