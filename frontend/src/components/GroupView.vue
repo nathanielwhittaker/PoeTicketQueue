@@ -122,6 +122,7 @@ let mounted = false
 
 const dingSound = new Audio('/sounds/ding.mp3')
 let lastItemCount = queue.value.length
+let lastBuildCount = buildQueue.value.length
 
 function playDing() {
   try {
@@ -168,10 +169,15 @@ async function syncGroup() {
       const live = await res.json()
       const shouldDing = canTrade.value && live.itemQueue.length > lastItemCount
       lastItemCount = live.itemQueue.length
+      const shouldDingBuild = canTrade.value && (live.buildQueue || []).length > lastBuildCount
+      lastBuildCount = (live.buildQueue || []).length
       queue.value = live.itemQueue
       members.value = live.members
       buildQueue.value = live.buildQueue || []
       if (shouldDing) {
+        playDing()
+      }
+      if (shouldDingBuild) {
         playDing()
       }
     }
@@ -256,6 +262,7 @@ async function onBuildItemRemove(bi, ii) {
 
 function onBuildImported(updatedGroup) {
   buildQueue.value = updatedGroup.buildQueue || []
+  lastBuildCount = (updatedGroup.buildQueue || []).length
   playDing()
 }
 
