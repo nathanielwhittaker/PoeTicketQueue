@@ -123,9 +123,7 @@ public abstract class PathOfExileTradeApi {
         Map<QueryStat, Object> filters = new LinkedHashMap<>();
         filters.put(QueryStat.GEM_LEVEL,        item.getGemLevel());
         filters.putAll(defenseFilters(item));
-        filters.put(QueryStat.PHYSICAL_DPS,     item.getPDPS());
-        filters.put(QueryStat.ELEMENTAL_DPS,    item.getEDPS());
-        filters.put(QueryStat.LOCAL_CRIT,       item.getLocalCrit());
+        filters.putAll(weaponFilters(item));
         filters.putAll(versionSpecificFilters(item));
         if (item.getRarity()    != null) { filters.put(QueryStat.RARITY,    item.getRarity()); }
         if (item.getCorrupted() != null) { filters.put(QueryStat.CORRUPTED, item.getCorrupted()); }
@@ -146,6 +144,16 @@ public abstract class PathOfExileTradeApi {
         filters.put(QueryStat.WARD,             new PoETradeQuery.MinMax(nullIfZero(item.getWard()),           nullIfZero(item.getMaxWard())));
         filters.put(QueryStat.BLOCK,            new PoETradeQuery.MinMax(nullIfZero(item.getBlock()),          nullIfZero(item.getMaxBlock())));
         filters.put(QueryStat.BASE_PERCENTILE,  new PoETradeQuery.MinMax(nullIfZero(item.getBasePercentile()), nullIfZero(item.getMaxBasePercentile())));
+        return filters;
+    }
+
+    public static Map<QueryStat, Object> weaponFilters(Item item) {
+        Map<QueryStat, Object> filters = new LinkedHashMap<>();
+        filters.put(QueryStat.HIT_DAMAGE,         new PoETradeQuery.MinMax(nullIfZero(item.getDamage()),     nullIfZero(item.getMaxDamage())));
+        filters.put(QueryStat.LOCAL_CRIT,         new PoETradeQuery.MinMax(nullIfZero(item.getLocalCrit()),  nullIfZero(item.getMaxLocalCrit())));
+        filters.put(QueryStat.PHYSICAL_DPS,       new PoETradeQuery.MinMax(nullIfZero(item.getPDPS()),       nullIfZero(item.getMaxPDPS())));
+        filters.put(QueryStat.ELEMENTAL_DPS,      new PoETradeQuery.MinMax(nullIfZero(item.getEDPS()),       nullIfZero(item.getMaxEDPS())));
+        filters.put(QueryStat.ATTACKS_PER_SECOND, new PoETradeQuery.MinMax(nullIfZero(item.getAPS()),        nullIfZero(item.getMaxAPS())));
         return filters;
     }
 

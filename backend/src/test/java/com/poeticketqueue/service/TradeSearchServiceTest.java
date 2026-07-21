@@ -64,6 +64,37 @@ class TradeSearchServiceTest {
     }
 
     @Test
+    void weaponFilters_serializeAsMinMaxRangesUnderWeaponFilters() throws Exception {
+        Item item = new Item("Some Bow", "RARE", "Thicket Bow");
+        item.damage = 500;          // Hit Damage -> trade key "damage"
+        item.maxDamage = 900;
+        item.localBaseCrit = 7;     // Crit Chance -> "crit"
+        item.pdps = 100;            // Physical DPS -> "pdps"
+        item.maxPdps = 200;
+        item.edps = 50;             // Elemental DPS -> "edps"
+        item.aps = 1;               // Attacks Per Second -> "aps"
+
+        String json = service.buildQuery(item, "Standard");
+
+        JsonNode weapon = objectMapper.readTree(json)
+                .path("query").path("filters").path("weapon_filters").path("filters");
+
+        assertThat(weapon.path("damage").path("min").asInt()).isEqualTo(500);
+        assertThat(weapon.path("damage").path("max").asInt()).isEqualTo(900);
+        assertThat(weapon.path("crit").path("min").asInt()).isEqualTo(7);
+        assertThat(weapon.path("pdps").path("min").asInt()).isEqualTo(100);
+        assertThat(weapon.path("pdps").path("max").asInt()).isEqualTo(200);
+        assertThat(weapon.path("edps").path("min").asInt()).isEqualTo(50);
+        assertThat(weapon.path("aps").path("min").asInt()).isEqualTo(1);
+    }
+
+    @Test
+    void weaponFilters_omittedWhenNoWeaponValuesSet() throws Exception {
+        Item item = new Item("Astral Plate", "NORMAL", "Astral Plate");
+
+        String json = service.buildQuery(item, "Standard");
+
+        JsonNode filters = objectMapper.readTree(json).path("query").path("filters");
     void poe2Item_armourFilterLandsUnderEquipmentFilters() throws Exception {
         Item item = new Item("Astral Plate", "RARE", "Astral Plate", "Astral Plate", new java.util.ArrayList<>(),
                 -1, -1, 100, -1, -1, -1, -1, null, -1, -1);

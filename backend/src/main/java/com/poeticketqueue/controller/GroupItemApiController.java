@@ -79,6 +79,14 @@ public class GroupItemApiController {
             if (af.block()          != null) { item.block            = zeroIfNull(af.block().min()); item.maxBlock         = zeroIfNull(af.block().max()); }
             if (af.basePercentile() != null) { item.basePercentile   = zeroIfNull(af.basePercentile().min()); item.maxBasePercentile = zeroIfNull(af.basePercentile().max()); }
         }
+        if (request.weaponFilters() != null) {
+            WeaponFiltersRequest wf = request.weaponFilters();
+            if (wf.damage() != null) { item.damage        = zeroIfNull(wf.damage().min()); item.maxDamage     = zeroIfNull(wf.damage().max()); }
+            if (wf.crit()   != null) { item.localBaseCrit  = zeroIfNull(wf.crit().min());   item.maxLocalCrit  = zeroIfNull(wf.crit().max()); }
+            if (wf.pdps()   != null) { item.pdps           = zeroIfNull(wf.pdps().min());   item.maxPdps       = zeroIfNull(wf.pdps().max()); }
+            if (wf.edps()   != null) { item.edps           = zeroIfNull(wf.edps().min());   item.maxEdps       = zeroIfNull(wf.edps().max()); }
+            if (wf.aps()    != null) { item.aps            = zeroIfNull(wf.aps().min());    item.maxAps        = zeroIfNull(wf.aps().max()); }
+        }
         return groupService.addItem(groupCode, item)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -183,8 +191,9 @@ public class GroupItemApiController {
         return val != null ? val : 0;
     }
 
-    record AddItemRequest(String name, String rarity, String baseType, List<FilterGroupRequest> filterGroups, ArmourFiltersRequest armourFilters) {}
+    record AddItemRequest(String name, String rarity, String baseType, List<FilterGroupRequest> filterGroups, ArmourFiltersRequest armourFilters, WeaponFiltersRequest weaponFilters) {}
     record ArmourFiltersRequest(MinMax ar, MinMax ev, MinMax es, MinMax ward, MinMax block, MinMax basePercentile) {}
+    record WeaponFiltersRequest(MinMax damage, MinMax crit, MinMax pdps, MinMax edps, MinMax aps) {}
     record MinMax(Integer min, Integer max) {}
     record FilterGroupRequest(StatGroupType type, Integer countMin, Integer countMax, List<StatFilterRequest> filters) {}
     record StatFilterRequest(String statId, String text, Double min, Double max) {}

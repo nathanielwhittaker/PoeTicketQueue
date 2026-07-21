@@ -9,9 +9,11 @@ public enum QueryStat {
     BLOCK           (new QueryStatType<PoETradeQuery.MinMax>(null, "block",            QueryStatType.FilterSection.ARMOUR_FILTERS) {}),
     BASE_PERCENTILE (new QueryStatType<PoETradeQuery.MinMax>(null, "base_percentile",  QueryStatType.FilterSection.ARMOUR_FILTERS) {}),
 
-    ELEMENTAL_DPS(new QueryStatType<Integer>(null, "edps",      QueryStatType.FilterSection.WEAPON_FILTERS) {}),
-    PHYSICAL_DPS (new QueryStatType<Integer>(null, "pdps",      QueryStatType.FilterSection.WEAPON_FILTERS) {}),
-    LOCAL_CRIT   (new QueryStatType<Integer>(null, "crit",      QueryStatType.FilterSection.WEAPON_FILTERS) {}),
+    HIT_DAMAGE        (new QueryStatType<PoETradeQuery.MinMax>(null, "damage",  QueryStatType.FilterSection.WEAPON_FILTERS) {}),
+    LOCAL_CRIT        (new QueryStatType<PoETradeQuery.MinMax>(null, "crit",    QueryStatType.FilterSection.WEAPON_FILTERS) {}),
+    PHYSICAL_DPS      (new QueryStatType<PoETradeQuery.MinMax>(null, "pdps",    QueryStatType.FilterSection.WEAPON_FILTERS) {}),
+    ELEMENTAL_DPS     (new QueryStatType<PoETradeQuery.MinMax>(null, "edps",    QueryStatType.FilterSection.WEAPON_FILTERS) {}),
+    ATTACKS_PER_SECOND(new QueryStatType<PoETradeQuery.MinMax>(null, "aps",     QueryStatType.FilterSection.WEAPON_FILTERS) {}),
 
     LINKS        (new QueryStatType<Integer>(null, "links",     QueryStatType.FilterSection.SOCKET_FILTERS, 0) {}),
 

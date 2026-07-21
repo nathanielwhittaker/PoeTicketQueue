@@ -117,6 +117,7 @@ public class TradeSearchService {
         }
 
         Map<QueryStat, Object> filters = new LinkedHashMap<>(PathOfExileTradeApi.defenseFilters(item));
+        filters.putAll(PathOfExileTradeApi.weaponFilters(item));
         if (StringUtils.isNotBlank(item.rarity)) {
             filters.put(QueryStat.RARITY, item.rarity.toLowerCase());
         }
