@@ -3,12 +3,15 @@ package com.poeticketqueue.service;
 import com.poeticketqueue.model.Group;
 import com.poeticketqueue.model.GroupRole;
 import com.poeticketqueue.model.Member;
+import com.poeticketqueue.model.PurchaseNotification;
 import com.poeticketqueue.model.QueuedBuild;
 import com.poeticketqueue.poe.build.PoeVersion;
 import com.poeticketqueue.poe.item.Item;
 import com.poeticketqueue.util.GroupCodeGenerator;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -94,6 +97,19 @@ public class GroupService {
         });
     }
 
+    public Optional<Group> boughtItem(String groupCode, int index) {
+        return findByCode(groupCode).map(group -> {
+            List<Item> queue = group.getItemQueue();
+            if (index >= 0 && index < queue.size()) {
+                Item item = queue.remove(index);
+                if (StringUtils.isNotBlank(item.getQueuedBy())) {
+                    group.getPurchaseNotifications().add(new PurchaseNotification(item.getQueuedBy(), itemLabel(item)));
+                }
+            }
+            return group;
+        });
+    }
+
     public Optional<Group> addBuild(String groupCode, QueuedBuild build) {
         return findByCode(groupCode).map(group -> {
             group.getBuildQueue().add(build);
@@ -117,6 +133,27 @@ public class GroupService {
         });
     }
 
+    public Optional<Group> boughtBuildItem(String groupCode, int buildIndex, int itemIndex) {
+        return findByCode(groupCode).map(group -> {
+            List<QueuedBuild> builds = group.getBuildQueue();
+            if (buildIndex >= 0 && buildIndex < builds.size()) {
+                QueuedBuild build = builds.get(buildIndex);
+                String queuedBy = build.getQueuedBy();
+                List<Item> items = build.getItems();
+                if (itemIndex >= 0 && itemIndex < items.size()) {
+                    Item item = items.remove(itemIndex);
+                    if (items.isEmpty()) {
+                        builds.remove(buildIndex);
+                    }
+                    if (StringUtils.isNotBlank(queuedBy)) {
+                        group.getPurchaseNotifications().add(new PurchaseNotification(queuedBy, itemLabel(item)));
+                    }
+                }
+            }
+            return group;
+        });
+    }
+
     public Optional<Group> removeBuild(String groupCode, int buildIndex) {
         return findByCode(groupCode).map(group -> {
             List<QueuedBuild> builds = group.getBuildQueue();
@@ -129,6 +166,37 @@ public class GroupService {
 
     public Optional<Group> findByCode(String groupCode) {
         return Optional.ofNullable(activeGroups.get(groupCode));
+    }
+
+    public List<PurchaseNotification> notificationsFor(Group group, String screenName) {
+        if (StringUtils.isBlank(screenName)) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(group.getPurchaseNotifications().stream()
+                .filter(n -> n.getTargetScreenName() != null && n.getTargetScreenName().equals(screenName))
+                .toList());
+    }
+
+    public Optional<Group> ackNotifications(String groupCode, String screenName, List<String> ids) {
+        return findByCode(groupCode).map(group -> {
+            if (screenName != null && ids != null) {
+                group.getPurchaseNotifications().removeIf(n -> ids.contains(n.getId()) && screenName.equals(n.getTargetScreenName()));
+            }
+            return group;
+        });
+    }
+
+    private static String itemLabel(Item item) {
+        if (StringUtils.isNotBlank(item.getName())) {
+            return item.getName();
+        }
+        if (StringUtils.isNotBlank(item.getBaseType())) {
+            return item.getBaseType();
+        }
+        if (StringUtils.isNotBlank(item.getCategory())) {
+            return item.getCategory();
+        }
+        return "Item";
     }
 
     private String generateUniqueCode() {

@@ -15,6 +15,7 @@ public class Group {
     private final List<Item> itemQueue = new ArrayList<>();
     private final List<QueuedBuild> buildQueue = new ArrayList<>();
     private final List<Member> members = new ArrayList<>();
+    private final List<PurchaseNotification> purchaseNotifications = new ArrayList<>();
 
     public Group(String name, String code, PoeVersion poeVersion, String league) {
         this.name = name;
@@ -57,5 +58,10 @@ public class Group {
 
     public List<Member> getMembers() {
         return members;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public List<PurchaseNotification> getPurchaseNotifications() {
+        return purchaseNotifications;
     }
 }
