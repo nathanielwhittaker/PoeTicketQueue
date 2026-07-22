@@ -28,6 +28,7 @@ import java.util.function.Function;
 public class GroupItemApiController {
 
     private static final Logger log = LoggerFactory.getLogger(GroupItemApiController.class);
+    private static final String REASON_REJECT = "reject";
 
     private final GroupService groupService;
     private final GroupMemberService groupMemberService;
@@ -95,9 +96,14 @@ public class GroupItemApiController {
     }
 
     @DeleteMapping("/{groupCode}/items/{index}")
-    public ResponseEntity<Group> removeItem(@PathVariable String groupCode, @PathVariable int index, HttpSession session) {
+    public ResponseEntity<Group> removeItem(@PathVariable String groupCode, @PathVariable int index,
+                                             @RequestParam(required = false) String reason, HttpSession session) {
         return withTradePermission(groupCode, session, group -> {
-            groupService.removeItem(groupCode, index);
+            if (REASON_REJECT.equalsIgnoreCase(reason)) {
+                groupService.rejectItem(groupCode, index);
+            } else {
+                groupService.removeItem(groupCode, index);
+            }
             return ResponseEntity.ok(group);
         });
     }
@@ -179,9 +185,14 @@ public class GroupItemApiController {
     }
 
     @DeleteMapping("/{groupCode}/builds/{buildIndex}/items/{itemIndex}")
-    public ResponseEntity<Group> removeBuildItem(@PathVariable String groupCode, @PathVariable int buildIndex, @PathVariable int itemIndex, HttpSession session) {
+    public ResponseEntity<Group> removeBuildItem(@PathVariable String groupCode, @PathVariable int buildIndex, @PathVariable int itemIndex,
+                                                  @RequestParam(required = false) String reason, HttpSession session) {
         return withTradePermission(groupCode, session, group -> {
-            groupService.removeBuildItem(groupCode, buildIndex, itemIndex);
+            if (REASON_REJECT.equalsIgnoreCase(reason)) {
+                groupService.rejectBuildItem(groupCode, buildIndex, itemIndex);
+            } else {
+                groupService.removeBuildItem(groupCode, buildIndex, itemIndex);
+            }
             return ResponseEntity.ok(group);
         });
     }

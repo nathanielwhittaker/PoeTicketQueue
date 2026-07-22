@@ -54,6 +54,41 @@
           autocomplete="off"
         />
       </div>
+      <div class="field">
+        <label>Announcements</label>
+        <div class="toggle-group">
+          <button
+            type="button"
+            :class="['toggle-btn', { active: announcementProvider === 'NONE' }]"
+            @click="announcementProvider = 'NONE'"
+          >None</button>
+          <button
+            type="button"
+            :class="['toggle-btn', { active: announcementProvider === 'DISCORD' }]"
+            @click="announcementProvider = 'DISCORD'"
+          >Discord</button>
+        </div>
+      </div>
+      <div class="field" v-if="announcementProvider === 'DISCORD'">
+        <label for="discordBotToken">Discord Bot Token <span class="optional">(stored server-side, never shown again)</span></label>
+        <input
+          id="discordBotToken"
+          v-model="discordBotToken"
+          type="password"
+          placeholder="Bot token"
+          autocomplete="off"
+        />
+      </div>
+      <div class="field" v-if="announcementProvider === 'DISCORD'">
+        <label for="discordChannelId">Discord Channel ID</label>
+        <input
+          id="discordChannelId"
+          v-model="discordChannelId"
+          type="text"
+          placeholder="Channel ID"
+          autocomplete="off"
+        />
+      </div>
       <p v-if="error" class="error">{{ error }}</p>
       <button type="button" :disabled="!groupName || !screenName || loading" @click="handleCreate">
         {{ loading ? 'Creating...' : 'Create' }}
@@ -72,6 +107,9 @@ const groupName = ref('')
 const poeVersion = ref('POE1')
 const poeSessionId = ref('')
 const league = ref('')
+const announcementProvider = ref('NONE')
+const discordBotToken = ref('')
+const discordChannelId = ref('')
 const leagues = ref([])
 const leagueLoading = ref(false)
 const error = ref('')
@@ -105,7 +143,16 @@ async function handleCreate() {
     const response = await fetch('/api/groups', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: groupName.value, screenName: screenName.value, poeVersion: poeVersion.value, poeSessionId: poeSessionId.value || null, league: league.value }),
+      body: JSON.stringify({
+        name: groupName.value,
+        screenName: screenName.value,
+        poeVersion: poeVersion.value,
+        poeSessionId: poeSessionId.value || null,
+        league: league.value,
+        announcementProvider: announcementProvider.value,
+        discordBotToken: announcementProvider.value === 'DISCORD' ? (discordBotToken.value || null) : null,
+        discordChannelId: announcementProvider.value === 'DISCORD' ? (discordChannelId.value || null) : null,
+      }),
     })
     if (!response.ok) throw new Error('Failed to create group')
     const group = await response.json()

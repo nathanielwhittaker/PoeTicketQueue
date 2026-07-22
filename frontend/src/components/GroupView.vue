@@ -281,8 +281,8 @@ onUnmounted(() => {
   window.removeEventListener('beforeunload', onBeforeUnload)
 })
 
-async function removeItem(index) {
-  const response = await fetch(`/api/groups/${group.code}/items/${index}`, { method: 'DELETE' })
+async function removeItem(index, reason) {
+  const response = await fetch(`/api/groups/${group.code}/items/${index}${reason ? `?reason=${reason}` : ''}`, { method: 'DELETE' })
   if (response.ok) {
     const updated = await response.json()
     queue.value = updated.itemQueue
@@ -300,7 +300,7 @@ async function onBought(index) {
 }
 function onReject(index) {
   playBoom()
-  removeItem(index)
+  removeItem(index, 'reject')
 }
 async function onBuy(index) {
   const res = await fetch(`/api/groups/${group.code}/items/${index}/buy`, { method: 'POST' })
@@ -333,8 +333,8 @@ async function onBuildBuy(bi, ii) {
   }
 }
 
-async function onBuildItemRemove(bi, ii) {
-  const res = await fetch(`/api/groups/${group.code}/builds/${bi}/items/${ii}`, { method: 'DELETE' })
+async function onBuildItemRemove(bi, ii, reason) {
+  const res = await fetch(`/api/groups/${group.code}/builds/${bi}/items/${ii}${reason ? `?reason=${reason}` : ''}`, { method: 'DELETE' })
   if (res.ok) {
     const updated = await res.json()
     buildQueue.value = updated.buildQueue || []
@@ -351,7 +351,7 @@ async function onBuildItemBought(bi, ii) {
 
 function onBuildItemReject(bi, ii) {
   playBoom()
-  onBuildItemRemove(bi, ii)
+  onBuildItemRemove(bi, ii, 'reject')
 }
 
 function onBuildImported(updatedGroup) {

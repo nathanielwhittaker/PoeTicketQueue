@@ -1,5 +1,8 @@
 package com.poeticketqueue.service;
 
+import com.poeticketqueue.announcement.AnnouncementConfig;
+import com.poeticketqueue.announcement.AnnouncementDispatcher;
+import com.poeticketqueue.announcement.AnnouncementEvent;
 import com.poeticketqueue.model.Group;
 import com.poeticketqueue.model.GroupRole;
 import com.poeticketqueue.model.Member;
@@ -9,6 +12,7 @@ import com.poeticketqueue.poe.build.PoeVersion;
 import com.poeticketqueue.poe.item.Item;
 import com.poeticketqueue.util.GroupCodeGenerator;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,15 +26,27 @@ public class GroupService {
 
     private final Map<String, Group> activeGroups = new ConcurrentHashMap<>();
     private final GroupCodeGenerator codeGenerator;
+    private final AnnouncementDispatcher dispatcher;
 
     public GroupService(GroupCodeGenerator codeGenerator) {
+        this(codeGenerator, AnnouncementDispatcher.noOp());
+    }
+
+    @Autowired
+    public GroupService(GroupCodeGenerator codeGenerator, AnnouncementDispatcher dispatcher) {
         this.codeGenerator = codeGenerator;
+        this.dispatcher = dispatcher;
     }
 
     public Group createGroup(String groupName, String creatorScreenName, PoeVersion poeVersion, String league) {
+        return createGroup(groupName, creatorScreenName, poeVersion, league, null);
+    }
+
+    public Group createGroup(String groupName, String creatorScreenName, PoeVersion poeVersion, String league, AnnouncementConfig announcementConfig) {
         String groupCode = generateUniqueCode();
         Group group = new Group(groupName, groupCode, poeVersion, league);
         group.getMembers().add(new Member(creatorScreenName, GroupRole.CREATOR));
+        group.setAnnouncementConfig(announcementConfig);
         activeGroups.put(groupCode, group);
         return group;
     }
@@ -83,6 +99,7 @@ public class GroupService {
     public Optional<Group> addItem(String groupCode, Item item) {
         return findByCode(groupCode).map(group -> {
             group.getItemQueue().add(item);
+            dispatcher.announce(group, AnnouncementEvent.queued(itemLabel(item), item.getQueuedBy()));
             return group;
         });
     }
@@ -97,6 +114,17 @@ public class GroupService {
         });
     }
 
+    public Optional<Group> rejectItem(String groupCode, int index) {
+        return findByCode(groupCode).map(group -> {
+            List<Item> queue = group.getItemQueue();
+            if (index >= 0 && index < queue.size()) {
+                Item removed = queue.remove(index);
+                dispatcher.announce(group, AnnouncementEvent.rejected(itemLabel(removed)));
+            }
+            return group;
+        });
+    }
+
     public Optional<Group> boughtItem(String groupCode, int index) {
         return findByCode(groupCode).map(group -> {
             List<Item> queue = group.getItemQueue();
@@ -105,6 +133,7 @@ public class GroupService {
                 if (StringUtils.isNotBlank(item.getQueuedBy())) {
                     group.getPurchaseNotifications().add(new PurchaseNotification(item.getQueuedBy(), itemLabel(item)));
                 }
+                dispatcher.announce(group, AnnouncementEvent.purchased(itemLabel(item)));
             }
             return group;
         });
@@ -113,6 +142,7 @@ public class GroupService {
     public Optional<Group> addBuild(String groupCode, QueuedBuild build) {
         return findByCode(groupCode).map(group -> {
             group.getBuildQueue().add(build);
+            dispatcher.announce(group, AnnouncementEvent.queued(build.getName(), build.getQueuedBy()));
             return group;
         });
     }
@@ -127,6 +157,23 @@ public class GroupService {
                     if (items.isEmpty()) {
                         builds.remove(buildIndex);
                     }
+                }
+            }
+            return group;
+        });
+    }
+
+    public Optional<Group> rejectBuildItem(String groupCode, int buildIndex, int itemIndex) {
+        return findByCode(groupCode).map(group -> {
+            List<QueuedBuild> builds = group.getBuildQueue();
+            if (buildIndex >= 0 && buildIndex < builds.size()) {
+                List<Item> items = builds.get(buildIndex).getItems();
+                if (itemIndex >= 0 && itemIndex < items.size()) {
+                    Item removed = items.remove(itemIndex);
+                    if (items.isEmpty()) {
+                        builds.remove(buildIndex);
+                    }
+                    dispatcher.announce(group, AnnouncementEvent.rejected(itemLabel(removed)));
                 }
             }
             return group;
@@ -148,6 +195,7 @@ public class GroupService {
                     if (StringUtils.isNotBlank(queuedBy)) {
                         group.getPurchaseNotifications().add(new PurchaseNotification(queuedBy, itemLabel(item)));
                     }
+                    dispatcher.announce(group, AnnouncementEvent.purchased(itemLabel(item)));
                 }
             }
             return group;
