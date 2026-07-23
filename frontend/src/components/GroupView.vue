@@ -87,7 +87,7 @@
                   <QueueItem
                     :item="item"
                     :canTrade="canTrade"
-                    @bought="onBuildItemRemove(bi, ii)"
+                    @bought="onBuildItemBought(bi, ii)"
                     @reject="onBuildItemReject(bi, ii)"
                     @buy="onBuildBuy(bi, ii)"
                   />
@@ -156,8 +156,10 @@ let mounted = false
 
 const dingSound = new Audio('/sounds/ding.mp3')
 const boomSound = new Audio('/sounds/vine-boom.mp3')
+const kachingSound = new Audio('/sounds/kaching.mp3')
 let lastItemCount = queue.value.length
 let lastBuildCount = buildQueue.value.length
+const seenNotifications = new Set()
 
 function playDing() {
   try {
@@ -170,6 +172,13 @@ function playBoom() {
   try {
     boomSound.currentTime = 0
     boomSound.play().catch(() => {})
+  } catch (e) {}
+}
+
+function playKaching() {
+  try {
+    kachingSound.currentTime = 0
+    kachingSound.play().catch(() => {})
   } catch (e) {}
 }
 
@@ -222,9 +231,29 @@ async function syncGroup() {
       if (shouldDingBuild) {
         playDing()
       }
+      const freshNotifications = (live.myPurchaseNotifications || []).filter(n => !seenNotifications.has(n.id))
+      if (freshNotifications.length > 0) {
+        for (const n of freshNotifications) {
+          seenNotifications.add(n.id)
+          playKaching()
+        }
+        ackNotifications(freshNotifications.map(n => n.id))
+      }
     }
   } catch (e) {
     console.warn('Poll failed', e)
+  }
+}
+
+async function ackNotifications(ids) {
+  try {
+    await fetch(`/api/groups/${group.code}/notifications/ack`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids }),
+    })
+  } catch (e) {
+    console.warn('Ack notifications failed', e)
   }
 }
 
@@ -261,7 +290,14 @@ async function removeItem(index) {
   }
 }
 
-function onBought(index) { removeItem(index) }
+async function onBought(index) {
+  const response = await fetch(`/api/groups/${group.code}/items/${index}/bought`, { method: 'POST' })
+  if (response.ok) {
+    const updated = await response.json()
+    queue.value = updated.itemQueue
+    lastItemCount = updated.itemQueue.length
+  }
+}
 function onReject(index) {
   playBoom()
   removeItem(index)
@@ -299,6 +335,14 @@ async function onBuildBuy(bi, ii) {
 
 async function onBuildItemRemove(bi, ii) {
   const res = await fetch(`/api/groups/${group.code}/builds/${bi}/items/${ii}`, { method: 'DELETE' })
+  if (res.ok) {
+    const updated = await res.json()
+    buildQueue.value = updated.buildQueue || []
+  }
+}
+
+async function onBuildItemBought(bi, ii) {
+  const res = await fetch(`/api/groups/${group.code}/builds/${bi}/items/${ii}/bought`, { method: 'POST' })
   if (res.ok) {
     const updated = await res.json()
     buildQueue.value = updated.buildQueue || []

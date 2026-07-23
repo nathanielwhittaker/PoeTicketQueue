@@ -1,6 +1,7 @@
 package com.poeticketqueue.controller;
 
 import com.poeticketqueue.model.Group;
+import com.poeticketqueue.model.PurchaseNotification;
 import com.poeticketqueue.model.QueuedBuild;
 import com.poeticketqueue.poe.item.Item;
 import com.poeticketqueue.poe.item.Stat;
@@ -41,9 +42,9 @@ public class GroupItemApiController {
     }
 
     @GetMapping("/{groupCode}")
-    public ResponseEntity<Group> getGroup(@PathVariable String groupCode) {
+    public ResponseEntity<GroupResponse> getGroup(@PathVariable String groupCode, HttpSession session) {
         return groupService.findByCode(groupCode)
-                .map(ResponseEntity::ok)
+                .map(group -> ResponseEntity.ok(groupResponse(group, session)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -123,8 +124,16 @@ public class GroupItemApiController {
         });
     }
 
+    @PostMapping("/{groupCode}/items/{index}/bought")
+    public ResponseEntity<GroupResponse> boughtItem(@PathVariable String groupCode, @PathVariable int index, HttpSession session) {
+        return withTradePermission(groupCode, session, group -> {
+            groupService.boughtItem(groupCode, index);
+            return ResponseEntity.ok(groupResponse(group, session));
+        });
+    }
+
     @PostMapping("/{groupCode}/builds")
-    public ResponseEntity<?> importBuild(@PathVariable String groupCode, @RequestBody ImportBuildRequest request) {
+    public ResponseEntity<?> importBuild(@PathVariable String groupCode, @RequestBody ImportBuildRequest request, HttpSession session) {
         Optional<Group> maybeGroup = groupService.findByCode(groupCode);
         if (maybeGroup.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -132,9 +141,12 @@ public class GroupItemApiController {
         Group group = maybeGroup.get();
         BuildImportService.BuildImportOutcome outcome = buildImportService.importBuild(request.url(), group.getPoeVersion(), request.useTrueValues());
         return switch (outcome.status()) {
-            case SUCCESS -> groupService.addBuild(groupCode, outcome.build())
-                    .<ResponseEntity<?>>map(ResponseEntity::ok)
-                    .orElseGet(() -> ResponseEntity.notFound().build());
+            case SUCCESS -> {
+                outcome.build().setQueuedBy((String) session.getAttribute(SessionAttributes.SCREEN_NAME));
+                yield groupService.addBuild(groupCode, outcome.build())
+                        .<ResponseEntity<?>>map(ResponseEntity::ok)
+                        .orElseGet(() -> ResponseEntity.notFound().build());
+            }
             case VERSION_MISMATCH -> ResponseEntity.status(409).body(new ImportErrorResponse(outcome.message()));
             case INVALID_URL -> ResponseEntity.badRequest().body(new ImportErrorResponse(outcome.message()));
         };
@@ -174,6 +186,29 @@ public class GroupItemApiController {
         });
     }
 
+    @PostMapping("/{groupCode}/builds/{buildIndex}/items/{itemIndex}/bought")
+    public ResponseEntity<GroupResponse> boughtBuildItem(@PathVariable String groupCode, @PathVariable int buildIndex, @PathVariable int itemIndex, HttpSession session) {
+        return withTradePermission(groupCode, session, group -> {
+            groupService.boughtBuildItem(groupCode, buildIndex, itemIndex);
+            return ResponseEntity.ok(groupResponse(group, session));
+        });
+    }
+
+    @PostMapping("/{groupCode}/notifications/ack")
+    public ResponseEntity<Void> ackNotifications(@PathVariable String groupCode, HttpSession session, @RequestBody AckRequest request) {
+        String screenName = (String) session.getAttribute(SessionAttributes.SCREEN_NAME);
+        if (screenName == null) {
+            return ResponseEntity.status(401).build();
+        }
+        groupService.ackNotifications(groupCode, screenName, request.ids());
+        return ResponseEntity.ok().build();
+    }
+
+    private GroupResponse groupResponse(Group group, HttpSession session) {
+        String screenName = (String) session.getAttribute(SessionAttributes.SCREEN_NAME);
+        return new GroupResponse(group, groupService.notificationsFor(group, screenName));
+    }
+
     private <T> ResponseEntity<T> withTradePermission(String groupCode, HttpSession session, Function<Group, ResponseEntity<T>> action) {
         String screenName = (String) session.getAttribute(SessionAttributes.SCREEN_NAME);
         if (screenName == null) {
@@ -201,4 +236,16 @@ public class GroupItemApiController {
     record BuyResponse(String tradeUrl) {}
     record ImportBuildRequest(String url, boolean useTrueValues) {}
     record ImportErrorResponse(String message) {}
+    record AckRequest(List<String> ids) {}
+
+    static class GroupResponse {
+        @com.fasterxml.jackson.annotation.JsonUnwrapped
+        public final Group group;
+        public final List<PurchaseNotification> myPurchaseNotifications;
+
+        GroupResponse(Group group, List<PurchaseNotification> myPurchaseNotifications) {
+            this.group = group;
+            this.myPurchaseNotifications = myPurchaseNotifications;
+        }
+    }
 }
