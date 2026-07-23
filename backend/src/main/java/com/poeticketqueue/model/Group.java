@@ -1,5 +1,7 @@
 package com.poeticketqueue.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.poeticketqueue.announcement.AnnouncementConfig;
 import com.poeticketqueue.poe.build.PoeVersion;
 import com.poeticketqueue.poe.item.Item;
 
@@ -16,6 +18,7 @@ public class Group {
     private final List<QueuedBuild> buildQueue = new ArrayList<>();
     private final List<Member> members = new ArrayList<>();
     private final List<PurchaseNotification> purchaseNotifications = new ArrayList<>();
+    private AnnouncementConfig announcementConfig;
 
     public Group(String name, String code, PoeVersion poeVersion, String league) {
         this.name = name;
@@ -60,8 +63,17 @@ public class Group {
         return members;
     }
 
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @JsonIgnore
     public List<PurchaseNotification> getPurchaseNotifications() {
         return purchaseNotifications;
+    }
+
+    @JsonIgnore
+    public AnnouncementConfig getAnnouncementConfig() {
+        return announcementConfig;
+    }
+
+    public void setAnnouncementConfig(AnnouncementConfig announcementConfig) {
+        this.announcementConfig = announcementConfig;
     }
 }

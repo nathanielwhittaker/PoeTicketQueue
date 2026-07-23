@@ -1,5 +1,7 @@
 package com.poeticketqueue.controller;
 
+import com.poeticketqueue.announcement.AnnouncementConfig;
+import com.poeticketqueue.announcement.AnnouncementProvider;
 import com.poeticketqueue.model.Group;
 import com.poeticketqueue.poe.build.PoeVersion;
 import org.apache.commons.lang3.StringUtils;
@@ -21,7 +23,8 @@ public class CreateGroupApiController {
 
     @PostMapping
     public ResponseEntity<Group> createGroup(@RequestBody CreateGroupRequest request, HttpSession session) {
-        Group group = groupService.createGroup(request.name(), request.screenName(), request.poeVersion(), request.league());
+        Group group = groupService.createGroup(request.name(), request.screenName(), request.poeVersion(), request.league(),
+                buildAnnouncementConfig(request));
         session.setAttribute(SessionAttributes.SCREEN_NAME, request.screenName());
         session.setAttribute(SessionAttributes.GROUP_CODE, group.getCode());
         if (StringUtils.isNotBlank(request.poeSessionId())) {
@@ -30,5 +33,17 @@ public class CreateGroupApiController {
         return ResponseEntity.ok(group);
     }
 
-    record CreateGroupRequest(String name, String screenName, PoeVersion poeVersion, String poeSessionId, String league) {}
+    private static AnnouncementConfig buildAnnouncementConfig(CreateGroupRequest request) {
+        AnnouncementProvider provider = request.announcementProvider() != null ? request.announcementProvider() : AnnouncementProvider.NONE;
+        AnnouncementConfig config = new AnnouncementConfig();
+        config.setProvider(provider);
+        if (provider == AnnouncementProvider.DISCORD) {
+            config.setDiscordBotToken(request.discordBotToken());
+            config.setDiscordChannelId(request.discordChannelId());
+        }
+        return config;
+    }
+
+    record CreateGroupRequest(String name, String screenName, PoeVersion poeVersion, String poeSessionId, String league,
+                               AnnouncementProvider announcementProvider, String discordBotToken, String discordChannelId) {}
 }
