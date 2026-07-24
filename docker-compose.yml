@@ -1,12 +1,35 @@
 services:
   app:
-    build: .
+    # Runs a published release by default. Override with docker-compose.build.yml to
+    # build from local source instead. Set APP_VERSION in .env to pin a release.
+    image: ${APP_IMAGE:-ghcr.io/nathanielwhittaker/poeticketqueue}:${APP_VERSION:-latest}
+    pull_policy: always
+    environment:
+      # Quieter logging + honours cloudflared's X-Forwarded-* headers.
+      SPRING_PROFILES_ACTIVE: prod
+    # Bound to loopback only: the host can reach it for debugging, but the LAN cannot
+    # (public access goes through the tunnel + Cloudflare Access, not this port).
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/"]
       interval: 30s
       timeout: 3s
       start_period: 25s
       retries: 3
+    restart: unless-stopped
+
+  # Public access for his buddies. Enable with: docker compose --profile tunnel up -d
+  # The connector dials OUT to Cloudflare (no inbound ports opened on the host) and
+  # reaches the app over the internal compose network as http://app:8080.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    profiles: ["tunnel"]
+    command: tunnel --no-autoupdate run
+    environment:
+      # Required when using this profile — set it in .env (see .env.example).
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:-}
+    depends_on:
+      app:
+        condition: service_healthy
     restart: unless-stopped

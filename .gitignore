@@ -18,6 +18,9 @@ frontend/dist/
 *.log
 logs/
 
+# Local deploy config (secrets: tunnel token, etc.)
+.env
+
 # OS
 .DS_Store
 Thumbs.db

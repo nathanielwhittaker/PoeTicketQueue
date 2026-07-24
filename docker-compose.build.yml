@@ -1,0 +1,7 @@
+# Override to build the image from local source instead of pulling a release.
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.build.yml up -d --build
+services:
+  app:
+    build: .
+    pull_policy: build
