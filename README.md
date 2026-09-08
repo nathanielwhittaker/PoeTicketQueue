@@ -1,6 +1,34 @@
 # PoeTicketQueue
 
-A ticket queue web app for Path of Exile groups.
+A full-stack web app that coordinates item buying for Path of Exile group play.
+A group leader creates a group with a shareable join code; players add item
+requests to the queue using trade-style filters backed by live PoE data (base
+types, stat mods, leagues); the group's traders work the queue, buying items
+and marking them bought; and a Discord integration announces group activity
+as it happens.
+
+![PoeTicketQueue screenshot](docs/screenshot.png)
+
+**Stack:** Java 21 · Spring Boot 3.3 · Vue 3 + Vite · Discord bot (JDA) ·
+Docker Compose · CI + tagged releases to GHCR · Cloudflare Tunnel deployment
+
+## Features
+
+- **Groups with join codes** — create a group, share the code, members join
+  with a screen name; Creator/Trader/Member roles and creator transfer.
+- **Item tickets with real trade filters** — players request items using
+  base-type, armour, weapon, and stat-mod filters (AND/NOT/COUNT groups)
+  sourced from live Path of Exile data, so requests read like actual trade
+  searches. Supports both Path of Exile 1 and 2, with league selection.
+- **Trader workflow** — traders work the queue, buying requested items and
+  marking them bought; per-build item lists let a player queue up a whole
+  build's worth of gear.
+- **pobb.in build import** — paste a build URL to import its whole item
+  list into the queue at once.
+- **Discord announcements** — a pluggable per-group announcement service
+  (Discord/JDA implementation) notifies the group's channel on activity.
+- **Light/dark theme**, single-container deployment, and an email-allowlisted
+  public deployment via Cloudflare Tunnel.
 
 ## Project Structure
 
